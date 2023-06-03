@@ -23,6 +23,7 @@
 		"ahoy": "workspace:*"
 	},
 	"scripts": {
-		"build": "rimraf dist && tsup --entry src/index.ts --entry src/cli.ts --dts --format esm,cjs"
+		"build": "rimraf dist && tsup --entry src/index.ts --entry src/cli.ts --dts --format esm,cjs",
+		"dev": "rimraf dist && tsup --entry src/index.ts --entry src/cli.ts --dts --format esm,cjs --watch"
 	}
 }
