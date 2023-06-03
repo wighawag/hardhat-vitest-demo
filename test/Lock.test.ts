@@ -1,10 +1,10 @@
 import { describe, it } from 'vitest';
-import {ethers} from 'hardhat';
-
 import {
   time,
   loadFixture,
 } from "@nomicfoundation/hardhat-network-helpers";
+
+import {ethers} from 'hardhat';
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 
@@ -46,7 +46,7 @@ describe("Lock", function () {
         deployOneYearLockFixture
       );
 
-      expect(await ethers.provider.getBalance(lock.address)).to.equal(
+      expect(await ethers.provider.getBalance(lock.target)).to.equal(
         lockedAmount
       );
     });

@@ -2,25 +2,17 @@
   "name": "template-hardhat",
   "version": "0.0.0",
   "description": "",
+  "type": "module",
   "devDependencies": {
-    "@ethersproject/abi": "^5.4.7",
-    "@ethersproject/providers": "^5.4.7",
-    "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
-    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
-    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
-    "@nomiclabs/hardhat-ethers": "^2.0.0",
-    "@nomiclabs/hardhat-etherscan": "^3.0.0",
-    "@typechain/ethers-v5": "^10.1.0",
-    "@typechain/hardhat": "^6.1.2",
-    "chai": "^4.2.0",
-    "ethers": "^5.4.7",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "chai": "^4.3.7",
+    "ethers": "^6.4.1",
     "hardhat": "^2.14.1",
-    "hardhat-gas-reporter": "^1.0.8",
-    "solidity-coverage": "^0.8.0",
-    "typechain": "^8.1.0",
     "vitest": "^0.31.4"
   },
   "scripts": {
-    "test": "hardhat test"
+    "test": "vitest"
   }
 }
