@@ -1,4 +1,4 @@
-import {Abi, Chain, createPublicClient, createWalletClient, custom, getContract} from 'viem';
+import {Abi, createPublicClient, createWalletClient, custom, getContract} from 'viem';
 
 import {network} from 'hardhat';
 

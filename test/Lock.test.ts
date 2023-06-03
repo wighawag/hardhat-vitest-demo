@@ -49,10 +49,11 @@ describe('Lock', function () {
 			const deployments = await loadAndExecuteDeployments({
 				provider: network.provider as any,
 			});
-			await publicClient.readContract({
+			const unlockTime = await publicClient.readContract({
 				...deployments['Lock'],
 				functionName: 'unlockTime',
 			});
+			expect(unlockTime).to.equal(1900000000n);
 		});
 
 		it('Should set the right unlockTime', async function () {
