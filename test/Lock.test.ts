@@ -4,9 +4,12 @@ import {
   loadFixture,
 } from "@nomicfoundation/hardhat-network-helpers";
 
-import {ethers} from 'hardhat';
+import { network } from 'hardhat';
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
+
+import { loadAndExecuteDeployments } from "ahoy";
+import { context } from "../context";
 
 describe("Lock", function () {
   // We define a fixture to reuse the same setup in every test.
@@ -24,6 +27,14 @@ describe("Lock", function () {
 
     const Lock = await ethers.getContractFactory("Lock");
     const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+
+    // const deployments = await loadAndExecuteDeployments(
+    //   {
+    //     provider: network.provider as any,
+    //   },
+    //   context
+    // );
+    // const lockDeployment = deployments[context.network]["Lock"];
 
     return { lock, unlockTime, lockedAmount, owner, otherAccount };
   }

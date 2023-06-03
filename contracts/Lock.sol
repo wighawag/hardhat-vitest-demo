@@ -32,3 +32,29 @@ contract Lock {
         owner.transfer(address(this).balance);
     }
 }
+
+contract OtherLock {
+    uint public unlockTime;
+    address payable public owner;
+
+    event WithdrawalTo(uint amount, address to, uint when);
+
+    constructor(uint _unlockTime) payable {
+        require(
+            block.timestamp < _unlockTime,
+            "Unlock time should be in the future"
+        );
+
+        unlockTime = _unlockTime;
+        owner = payable(msg.sender);
+    }
+
+    function withdrawTo(address payable to) public {
+        require(block.timestamp >= unlockTime, "You can't withdraw yet");
+        require(msg.sender == owner, "You aren't the owner");
+
+        emit WithdrawalTo(address(this).balance, to, block.timestamp);
+
+        to.transfer(address(this).balance);
+    }
+}
