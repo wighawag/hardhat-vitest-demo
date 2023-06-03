@@ -31,7 +31,7 @@ async function deployLock(delta: bigint) {
 	}
 
 	return {
-		lock: contract(receipt.contractAddress, artifacts.Lock.abi),
+		lock: contract({address: receipt.contractAddress, abi: artifacts.Lock.abi}),
 		unlockTime,
 		lockedAmount,
 		owner,
@@ -49,31 +49,19 @@ describe('Lock', function () {
 			const deployments = await loadAndExecuteDeployments({
 				provider: network.provider as any,
 			});
-			const unlockTime = await publicClient.readContract({
-				...deployments['Lock'],
-				functionName: 'unlockTime',
-			});
+			const lock = contract(deployments['Lock']);
+			const unlockTime = await lock.read.unlockTime();
 			expect(unlockTime).to.equal(1900000000n);
 		});
 
 		it('Should set the right unlockTime', async function () {
 			const {lock, unlockTime, owner} = await loadFixture(deployOneYearLockFixture);
-			expect(
-				await publicClient.readContract({
-					...lock,
-					functionName: 'unlockTime',
-				})
-			).to.equal(unlockTime);
+			expect(await lock.read.unlockTime()).to.equal(unlockTime);
 		});
 
 		it('Should set the right owner', async function () {
 			const {lock, owner} = await loadFixture(deployOneYearLockFixture);
-			expect(
-				await publicClient.readContract({
-					...lock,
-					functionName: 'owner',
-				})
-			).to.equal(owner);
+			expect(await lock.read.owner()).to.equal(owner);
 		});
 
 		it('Should receive and store the funds to lock', async function () {

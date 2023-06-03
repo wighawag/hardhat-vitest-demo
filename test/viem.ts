@@ -16,10 +16,15 @@ export const publicClient = createPublicClient({
 
 export const accounts = await walletClient.getAddresses();
 
-export function contract<TAbi extends Abi>(address: `0x${string}`, abi: TAbi) {
-	return getContract({
-		address,
-		abi,
-		walletClient,
-	});
+export function contract<TAbi extends Abi>(contractInfo: {address: `0x${string}`; abi: TAbi}) {
+	return {
+		...getContract({
+			...contractInfo,
+			walletClient,
+		}),
+		...getContract({
+			...contractInfo,
+			publicClient,
+		}),
+	};
 }
