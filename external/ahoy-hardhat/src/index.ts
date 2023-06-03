@@ -1,11 +1,12 @@
 import fs from 'node:fs';
+import path from 'node:path';
 
 import type {Context} from 'ahoy';
 
-import {subtask, task} from 'hardhat/config';
+import {subtask, task, extendConfig} from 'hardhat/config';
 import {TASK_COMPILE_SOLIDITY_EMIT_ARTIFACTS} from 'hardhat/builtin-tasks/task-names';
 import {loadAndExecuteDeployments} from 'ahoy';
-import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import {HardhatConfig, HardhatRuntimeEnvironment, HardhatUserConfig} from 'hardhat/types';
 import {HardhatPluginError} from 'hardhat/plugins';
 
 function setNetwork(hre: HardhatRuntimeEnvironment) {
@@ -30,6 +31,59 @@ function ensureCorrectNetworkDefined(hre: HardhatRuntimeEnvironment) {
 		);
 	}
 }
+
+function addIfNotPresent(array: string[], value: string) {
+	if (array.indexOf(value) === -1) {
+		array.push(value);
+	}
+}
+function setupExtraSolcSettings(settings: {
+	metadata: {useLiteralContent: boolean};
+	outputSelection: {'*': {'': string[]; '*': string[]}};
+}): void {
+	settings.metadata = settings.metadata || {};
+	settings.metadata.useLiteralContent = true;
+
+	if (settings.outputSelection === undefined) {
+		settings.outputSelection = {
+			'*': {
+				'*': [],
+				'': [],
+			},
+		};
+	}
+	if (settings.outputSelection['*'] === undefined) {
+		settings.outputSelection['*'] = {
+			'*': [],
+			'': [],
+		};
+	}
+	if (settings.outputSelection['*']['*'] === undefined) {
+		settings.outputSelection['*']['*'] = [];
+	}
+	if (settings.outputSelection['*'][''] === undefined) {
+		settings.outputSelection['*'][''] = [];
+	}
+
+	addIfNotPresent(settings.outputSelection['*']['*'], 'abi');
+	addIfNotPresent(settings.outputSelection['*']['*'], 'evm.bytecode');
+	addIfNotPresent(settings.outputSelection['*']['*'], 'evm.deployedBytecode');
+	addIfNotPresent(settings.outputSelection['*']['*'], 'metadata');
+	addIfNotPresent(settings.outputSelection['*']['*'], 'devdoc');
+	addIfNotPresent(settings.outputSelection['*']['*'], 'userdoc');
+	addIfNotPresent(settings.outputSelection['*']['*'], 'storageLayout');
+	addIfNotPresent(settings.outputSelection['*']['*'], 'evm.methodIdentifiers');
+	addIfNotPresent(settings.outputSelection['*']['*'], 'evm.gasEstimates');
+	// addIfNotPresent(settings.outputSelection["*"][""], "ir");
+	// addIfNotPresent(settings.outputSelection["*"][""], "irOptimized");
+	// addIfNotPresent(settings.outputSelection["*"][""], "ast");
+}
+
+extendConfig((config: HardhatConfig, userConfig: Readonly<HardhatUserConfig>) => {
+	for (const compiler of config.solidity.compilers) {
+		setupExtraSolcSettings(compiler.settings);
+	}
+});
 
 task('deploy', 'Deploy contracts').setAction(async (args, hre) => {
 	ensureCorrectNetworkDefined(hre);
@@ -63,7 +117,16 @@ subtask(TASK_COMPILE_SOLIDITY_EMIT_ARTIFACTS).setAction(async (args, _, runSuper
 				const shortName = artifact.artifactsEmitted[i];
 				const content = fs.readFileSync(filepath, 'utf-8');
 				const parsed = JSON.parse(content);
-				const artifactObject = {abi: parsed.abi, bytecode: parsed.bytecode};
+
+				const debugFilepath = filepath.replace('.json', '.dbg.json');
+				const debugContent = fs.readFileSync(debugFilepath, 'utf-8');
+				const parsedDebug: {_format: string; buildInfo: string} = JSON.parse(debugContent);
+				const buildInfoFilepath = path.join(path.dirname(path.resolve(debugFilepath)), parsedDebug.buildInfo);
+				const buildInfoContent = fs.readFileSync(buildInfoFilepath, 'utf-8');
+				const parsedBuildInfo = JSON.parse(buildInfoContent);
+				const solidityOutput = parsedBuildInfo.output.contracts[artifact.file.sourceName][shortName];
+
+				const artifactObject = {...parsed, ...solidityOutput};
 				const fullName = `${artifact.file.sourceName}/${shortName}`;
 				allArtifacts[fullName] = artifactObject;
 				if (shortNameDict[shortName]) {
