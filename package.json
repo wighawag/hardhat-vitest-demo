@@ -12,9 +12,11 @@
     "chai": "^4.3.7",
     "ethers": "^6.4.1",
     "hardhat": "^2.14.1",
+    "set-defaults": "^0.0.1",
     "vitest": "^0.31.4"
   },
   "scripts": {
+    "prepare": "set-defaults .vscode",
     "compile": "hardhat compile",
     "test": "vitest"
   }

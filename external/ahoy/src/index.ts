@@ -330,7 +330,7 @@ export async function executeDeployScripts<
 
 	const env: OnBoardEnvironment<string> = {
 		...perliminaryEnvironment,
-		deploy
+		deploy,
 	};
 
 	// deploy: async <TAbi extends Abi, TChain extends Chain = Chain>(
