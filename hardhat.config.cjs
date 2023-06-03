@@ -1,9 +1,5 @@
 require('@nomicfoundation/hardhat-ethers');
-require('@nomicfoundation/hardhat-chai-matchers');
-
-const {setContext} = require('ahoy-hardhat');
-const {context} = require('./context');
-setContext(context);
+require('ahoy-hardhat');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

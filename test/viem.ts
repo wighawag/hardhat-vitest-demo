@@ -1,0 +1,25 @@
+import {Abi, Chain, createPublicClient, createWalletClient, custom, getContract} from 'viem';
+
+import {network} from 'hardhat';
+
+import {hardhat} from 'viem/chains';
+
+export const walletClient = createWalletClient({
+	chain: hardhat,
+	transport: custom(network.provider),
+});
+
+export const publicClient = createPublicClient({
+	chain: hardhat,
+	transport: custom(network.provider),
+});
+
+export const accounts = await walletClient.getAddresses();
+
+export function contract<TAbi extends Abi>(address: `0x${string}`, abi: TAbi) {
+	return getContract({
+		address,
+		abi,
+		walletClient,
+	});
+}

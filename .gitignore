@@ -13,3 +13,5 @@ artifacts
 
 .vscode/*
 !*.default
+
+generated/

@@ -50,28 +50,30 @@ export type UnknownNamedAccounts = {
 export type UnknownDeploymentsAcrossNetworks = Record<string, UnknownDeployments>;
 
 export type Context<
-	NetworkName extends string,
+	// NetworkName extends string,
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
-	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
-	DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
+	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts
+	// DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
 > = {
-	deployments?: DeploymentsAcrossNetworks;
-	accounts: NamedAccounts;
+	// deployments?: DeploymentsAcrossNetworks;
+	accounts?: NamedAccounts;
 	artifacts: Artifacts;
-	network: NetworkName;
+	// network: NetworkName;
 };
 
 export type OnBoardEnvironment<
-	NetworkName extends string,
+	// NetworkName extends string,
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
-	DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
+	Deployments extends UnknownDeployments = UnknownDeployments
+	// DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
 > = {
-	network: NetworkName;
+	// network: NetworkName;
 	config: ResolvedConfig;
 	deploy: DeployFunction;
 	provider: EIP1193ProviderWithoutEvents;
-	deployments: DeploymentsAcrossNetworks;
+	deployments: Deployments;
+	// deployments: DeploymentsAcrossNetworks;
 	accounts: NamedAccounts;
 	artifacts: Artifacts;
 };
@@ -95,25 +97,29 @@ export type DeployFunction = <TAbi extends Abi, TChain extends Chain = Chain>(
 ) => Promise<Deployment<TAbi>>;
 
 export type DeployScriptFunction<
-	NetworkName extends string,
+	// NetworkName extends string,
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
-	DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
+	Deployments extends UnknownDeployments = UnknownDeployments
+
+	// DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
 > = (
-	env: OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>
+	env: OnBoardEnvironment<Artifacts, NamedAccounts, Deployments> //OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>
 ) => Promise<void | boolean>;
 
 export interface DeployScriptModule<
-	NetworkName extends string,
+	// NetworkName extends string,
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
-	DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
+	Deployments extends UnknownDeployments = UnknownDeployments
+
+	// DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
 > {
 	// (): DeployScriptFunction<NetworkName, Artifacts, NamedAccounts, Deployments>;
-	(env: OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>): Promise<void | boolean>;
-	context: Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>;
+	(env: OnBoardEnvironment<Artifacts, NamedAccounts, Deployments>): Promise<void | boolean>; // OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>): Promise<void | boolean>;
+	context: Context<Artifacts>; //Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>;
 	skip?: (
-		env: OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>
+		env: OnBoardEnvironment<Artifacts, NamedAccounts, Deployments> // OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>
 	) => Promise<boolean>;
 	tags?: string[];
 	dependencies?: string[];
@@ -131,59 +137,70 @@ export type AhoyConfig = {
 };
 
 export type ScriptCallback<
-	NetworkName extends string,
+	// NetworkName extends string,
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
-	DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
-> = (env: OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>) => Promise<void>;
+	Deployments extends UnknownDeployments = UnknownDeployments
+	// DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
+> = (env: OnBoardEnvironment<Artifacts, NamedAccounts, Deployments>) => Promise<void>;
+// > = (env: OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>) => Promise<void>;
 
 export function createFn<
-	NetworkName extends string,
+	// NetworkName extends string,
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
-	DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
+	Deployments extends UnknownDeployments = UnknownDeployments
+
+	// DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
 >(
-	context: Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>,
-	callback: DeployScriptFunction<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>,
+	context: Context<Artifacts, NamedAccounts>, //Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>,
+	callback: DeployScriptFunction<Artifacts, NamedAccounts, Deployments>, //DeployScriptFunction<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>,
 	options: {tags?: string[]; dependencies?: string[]}
-): DeployScriptModule<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks> {
-	const scriptModule = (env: OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>) =>
-		callback(env);
+): DeployScriptModule<Artifacts, NamedAccounts, Deployments> {
+	//DeployScriptModule<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks> {
+	// const scriptModule = (env: OnBoardEnvironment<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>) =>
+	const scriptModule = (env: OnBoardEnvironment<Artifacts, NamedAccounts, Deployments>) => callback(env);
 	scriptModule.context = context;
 	scriptModule.tags = options.tags;
 	scriptModule.dependencies = options.dependencies;
 	// TODO id + skip
-	return scriptModule as unknown as DeployScriptModule<
-		NetworkName,
-		Artifacts,
-		NamedAccounts,
-		DeploymentsAcrossNetworks
-	>;
+	return scriptModule as unknown as DeployScriptModule<Artifacts, NamedAccounts, Deployments>;
+	// return scriptModule as unknown as DeployScriptModule<
+	// 	NetworkName,
+	// 	Artifacts,
+	// 	NamedAccounts,
+	// 	DeploymentsAcrossNetworks
+	// >;
 }
 
 export async function loadAndExecuteDeployments<
-	NetworkName extends string,
+	// NetworkName extends string,
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
-	DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
->(config: Config, context?: Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>) {
+	Deployments extends UnknownDeployments = UnknownDeployments
+	// DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
+>(config: Config, context?: Context<Artifacts>) {
+	//Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>) {
 	const resolvedConfig: ResolvedConfig = {deployments: 'deployments', scripts: 'deploy', tags: [], ...config};
 
-	return executeDeployScripts<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>(resolvedConfig);
+	// return executeDeployScripts<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>(resolvedConfig);
+	return executeDeployScripts<Artifacts, NamedAccounts, Deployments>(resolvedConfig);
 
 	// TODO
 	// await this.export(options);
 }
 
 export async function executeDeployScripts<
-	NetworkName extends string,
+	// NetworkName extends string,
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
-	DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
+	Deployments extends UnknownDeployments = UnknownDeployments
+	// DeploymentsAcrossNetworks extends UnknownDeploymentsAcrossNetworks = UnknownDeploymentsAcrossNetworks
 >(
 	config: ResolvedConfig,
-	context?: Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>
-): Promise<DeploymentsAcrossNetworks & {[key in NetworkName]: DeploymentsAcrossNetworks}> {
+	context?: Context<Artifacts> //Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>
+	// ): Promise<DeploymentsAcrossNetworks & {[key in NetworkName]: DeploymentsAcrossNetworks}> {
+): Promise<Deployments> {
 	let filepaths;
 	filepaths = traverseMultipleDirectory([config.scripts]);
 	filepaths = filepaths.sort((a: string, b: string) => {
@@ -196,14 +213,14 @@ export async function executeDeployScripts<
 		return 0;
 	});
 
-	const scriptModuleByFilePath: {[filename: string]: DeployScriptModule<string>} = {};
+	const scriptModuleByFilePath: {[filename: string]: DeployScriptModule} = {};
 	// const scriptFuncByFilePath: {[filename: string]: DeployScriptFunction} = {};
 	const scriptPathBags: {[tag: string]: string[]} = {};
 	const scriptFilePaths: string[] = [];
 
 	for (const filepath of filepaths) {
 		const scriptFilePath = path.resolve(filepath);
-		let scriptModule: DeployScriptModule<string>;
+		let scriptModule: DeployScriptModule;
 		// console.log("fetching " + scriptFilePath);
 		try {
 			if (require.cache) {
@@ -212,18 +229,18 @@ export async function executeDeployScripts<
 			scriptModule = require(scriptFilePath);
 
 			if ((scriptModule as any).default) {
-				scriptModule = (scriptModule as any).default as DeployScriptModule<string>;
+				scriptModule = (scriptModule as any).default as DeployScriptModule;
 				if ((scriptModule as any).default) {
 					console.warn(`double default...`);
-					scriptModule = (scriptModule as any).default as DeployScriptModule<string>;
+					scriptModule = (scriptModule as any).default as DeployScriptModule;
 				}
 			}
 			scriptModuleByFilePath[scriptFilePath] = scriptModule;
 			if (context && context !== scriptModule.context) {
 				throw new Error(`context between 2 scripts is different, please share the same across them`);
 			}
-			context = scriptModule.context as Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>;
-			console.log(`context loaded : ${context.network}`);
+			context = scriptModule.context as Context<Artifacts>; // Context<NetworkName, Artifacts, NamedAccounts, DeploymentsAcrossNetworks>;
+			// console.log(`context loaded : ${context.network}`);
 		} catch (e) {
 			// console.error("require failed", e);
 			throw new Error('ERROR processing skip func of ' + filepath + ':\n' + ((e as any).stack || e));
@@ -269,7 +286,8 @@ export async function executeDeployScripts<
 		throw new Error(`no context loaded`);
 	}
 
-	const deployments = context.deployments || ({} as UnknownDeploymentsAcrossNetworks);
+	// const deployments = context.deployments || ({} as UnknownDeploymentsAcrossNetworks);
+	const deployments: UnknownDeployments = {};
 
 	const transport = 'provider' in config ? custom(config.provider) : http(config.nodeUrl);
 	const provider = 'provider' in config ? config.provider : new JSONRPCHTTPProvider(config.nodeUrl); // TODO use a viem wrapper ?
@@ -277,25 +295,37 @@ export async function executeDeployScripts<
 	const walletClient = createWalletClient({transport});
 
 	const perliminaryEnvironment = {
-		network: context.network,
+		// network: context.network,
 		provider,
 		config,
 		deployments,
-		accounts: context.accounts,
+		accounts: context.accounts || {},
 		artifacts: context.artifacts,
 	};
 
-	if (!deployments[context.network]) {
-		deployments[context.network] = {} as DeploymentsAcrossNetworks[NetworkName];
-	}
+	// if (!deployments[context.network]) {
+	// 	deployments[context.network] = {} as DeploymentsAcrossNetworks[NetworkName];
+	// }
 
 	async function save<TAbi extends Abi>(name: string, deployment: Deployment<TAbi>) {
-		(deployments[env.network] as UnknownDeployments)[name] = deployment;
+		deployments[name] = deployment;
 	}
 
 	async function deploy<TAbi extends Abi, TChain extends Chain = Chain>(name: string, args: DeployFunctionArgs<TAbi>) {
 		const {account, artifact, ...viemArgs} = args;
-		const address = account.startsWith('0x') ? (account as `0x${string}`) : perliminaryEnvironment.accounts[account];
+		let address: `0x${string}`;
+		if (account.startsWith('0x')) {
+			address = account as `0x${string}`;
+		} else {
+			if (perliminaryEnvironment.accounts) {
+				address = perliminaryEnvironment.accounts[account];
+				if (!address) {
+					throw new Error(`no address for ${account}`);
+				}
+			} else {
+				throw new Error(`no accounts setup, cannot get address for ${account}`);
+			}
+		}
 		const viemAccount = getAccount(address);
 
 		const artifactObject = (
@@ -328,7 +358,7 @@ export async function executeDeployScripts<
 		return deployment;
 	}
 
-	const env: OnBoardEnvironment<string> = {
+	const env: OnBoardEnvironment = {
 		...perliminaryEnvironment,
 		deploy,
 	};
@@ -341,11 +371,11 @@ export async function executeDeployScripts<
 	// console.log({ scriptFilePaths });
 	const scriptsRegisteredToRun: {[filename: string]: boolean} = {};
 	const scriptsToRun: Array<{
-		func: DeployScriptModule<string>;
+		func: DeployScriptModule;
 		filePath: string;
 	}> = [];
 	const scriptsToRunAtTheEnd: Array<{
-		func: DeployScriptModule<string>;
+		func: DeployScriptModule;
 		filePath: string;
 	}> = [];
 	function recurseDependencies(scriptFilePath: string) {
@@ -435,7 +465,9 @@ export async function executeDeployScripts<
 		}
 	}
 
-	fs.writeFileSync('./context/deployments.ts', `export default ${JSON.stringify(deployments, null, 2)} as const;`);
+	const folderPath = './generated';
+	fs.mkdirSync(folderPath, {recursive: true});
+	fs.writeFileSync(`${folderPath}/deployments.ts`, `export default ${JSON.stringify(deployments, null, 2)} as const;`);
 
 	return deployments as any;
 }
