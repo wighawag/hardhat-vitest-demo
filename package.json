@@ -17,7 +17,8 @@
     "hardhat": "^2.14.1",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-coverage": "^0.8.0",
-    "typechain": "^8.1.0"
+    "typechain": "^8.1.0",
+    "vitest": "^0.31.4"
   },
   "scripts": {
     "test": "hardhat test"
