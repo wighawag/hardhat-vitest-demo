@@ -42,8 +42,6 @@ export async function loadAndExecuteDeployments<
 		tags: config.tags || [],
 	};
 
-	console.log(resolvedConfig);
-
 	return executeDeployScripts<Artifacts, NamedAccounts, Deployments>(resolvedConfig);
 
 	// TODO
