@@ -1,7 +1,7 @@
 import {expect, describe, it} from 'vitest';
 import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 
-import {loadAndExecuteDeployments} from 'ahoy';
+import {loadAndExecuteDeployments} from 'rocketh';
 
 import {accounts, walletClient, contract, publicClient} from './viem';
 

@@ -1,7 +1,7 @@
 {
-	"name": "ahoy-hardhat",
+	"name": "hardhat-rocketh",
 	"version": "0.0.0",
-	"description": "ahoy plugin for hardhat",
+	"description": "rocketh plugin for hardhat",
 	"publishConfig": {
 		"access": "public"
 	},
@@ -10,20 +10,20 @@
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"bin": {
-		"ahoy": "dist/cli.cjs"
+		"rocketh": "dist/cli.cjs"
 	},
 	"devDependencies": {
-		"ahoy": "workspace:*",
+		"rocketh": "workspace:*",
 		"hardhat": "^2.14.1",
 		"rimraf": "^4.4.1",
 		"tsup": "^6.7.0",
 		"typescript": "^4.9.5"
 	},
 	"peerDependencies": {
-		"ahoy": "workspace:*"
+		"rocketh": "workspace:*"
 	},
 	"scripts": {
-		"build": "rimraf dist && tsup --entry src/index.ts --entry src/cli.ts --dts --format esm,cjs",
-		"dev": "rimraf dist && tsup --entry src/index.ts --entry src/cli.ts --dts --format esm,cjs --watch"
+		"build": "rimraf dist && tsup --entry src/index.ts --dts --format esm,cjs",
+		"dev": "rimraf dist && tsup --entry src/index.ts --dts --format esm,cjs --watch"
 	}
 }

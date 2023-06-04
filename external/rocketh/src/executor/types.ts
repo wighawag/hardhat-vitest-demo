@@ -27,10 +27,6 @@ export interface DeployScriptModule<
 	id?: string;
 }
 
-export type AhoyConfig = {
-	fetchArtifact(name: string): Promise<Artifact>;
-};
-
 export type ProvidedContext<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts

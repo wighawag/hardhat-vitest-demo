@@ -3,8 +3,8 @@ import path from 'node:path';
 
 import {subtask, task, extendConfig} from 'hardhat/config';
 import {TASK_COMPILE_SOLIDITY_EMIT_ARTIFACTS} from 'hardhat/builtin-tasks/task-names';
-import {loadAndExecuteDeployments} from 'ahoy';
-import {HardhatConfig, HardhatRuntimeEnvironment, HardhatUserConfig} from 'hardhat/types';
+import {loadAndExecuteDeployments} from 'rocketh';
+import {HardhatConfig, HardhatUserConfig} from 'hardhat/types';
 
 function addIfNotPresent(array: string[], value: string) {
 	if (array.indexOf(value) === -1) {

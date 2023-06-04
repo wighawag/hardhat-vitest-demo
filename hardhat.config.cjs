@@ -1,5 +1,5 @@
-require('@nomicfoundation/hardhat-ethers');
-require('ahoy-hardhat');
+require('@nomicfoundation/hardhat-network-helpers');
+require('hardhat-rocketh');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

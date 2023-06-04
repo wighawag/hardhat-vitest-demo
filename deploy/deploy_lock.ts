@@ -1,4 +1,4 @@
-import {execute} from 'ahoy';
+import {execute} from 'rocketh';
 import {context} from './_context';
 
 export default execute(

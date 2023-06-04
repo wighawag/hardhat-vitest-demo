@@ -5,8 +5,8 @@
   "type": "module",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
-    "ahoy": "workspace:*",
-    "ahoy-hardhat": "workspace:*",
+    "rocketh": "workspace:*",
+    "hardhat-rocketh": "workspace:*",
     "hardhat": "^2.14.1",
     "set-defaults": "^0.0.1",
     "viem": "^0.3.50",

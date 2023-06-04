@@ -5,10 +5,10 @@ import {Command, Option} from 'commander';
 import pkg from '../package.json';
 import figlet from 'figlet';
 console.log(`------------------------------------------------`);
-console.log(figlet.textSync('ahoy sailor !'));
+console.log(figlet.textSync('rocketh'));
 console.log(`------------------------------------------------`);
 
-const commandName = `ahoy`;
+const commandName = `rocketh`;
 
 const program = new Command();
 program
@@ -34,16 +34,16 @@ type Networks = {[name: string]: {rpcUrl: string}};
 type ConfigFile = {networks: Networks};
 let configFile: ConfigFile;
 try {
-	const configString = fs.readFileSync('./ahoy.json', 'utf-8');
+	const configString = fs.readFileSync('./rocketh.json', 'utf-8');
 	configFile = JSON.parse(configString);
 } catch {
-	console.error(`could not read ahoy.json`);
+	console.error(`could not read rocketh.json`);
 	process.exit(1);
 }
 
 const network = configFile.networks && configFile.networks[options.network];
 if (!network) {
-	console.error(`network "${options.network}" is not configured. Please add it to the ahoy.json file`);
+	console.error(`network "${options.network}" is not configured. Please add it to the rocketh.json file`);
 }
 
 loadAndExecuteDeployments({

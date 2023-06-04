@@ -1,5 +1,5 @@
 {
-	"name": "ahoy",
+	"name": "rocketh",
 	"version": "0.0.0",
 	"description": "deploy smart contract on ethereum-compatible networks",
 	"publishConfig": {
@@ -10,7 +10,7 @@
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"bin": {
-		"ahoy": "dist/cli.cjs"
+		"rocketh": "dist/cli.cjs"
 	},
 	"devDependencies": {
 		"@types/figlet": "^1.5.5",

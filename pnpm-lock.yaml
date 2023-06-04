@@ -7,15 +7,15 @@ importers:
       '@nomicfoundation/hardhat-network-helpers':
         specifier: ^1.0.8
         version: 1.0.8(hardhat@2.14.1)
-      ahoy:
-        specifier: workspace:*
-        version: link:external/ahoy
-      ahoy-hardhat:
-        specifier: workspace:*
-        version: link:external/ahoy-hardhat
       hardhat:
         specifier: ^2.14.1
         version: 2.14.1(typescript@5.1.3)
+      hardhat-rocketh:
+        specifier: workspace:*
+        version: link:external/hardhat-rocketh
+      rocketh:
+        specifier: workspace:*
+        version: link:external/rocketh
       set-defaults:
         specifier: ^0.0.1
         version: 0.0.1
@@ -26,7 +26,25 @@ importers:
         specifier: ^0.31.4
         version: 0.31.4
 
-  external/ahoy:
+  external/hardhat-rocketh:
+    devDependencies:
+      hardhat:
+        specifier: ^2.14.1
+        version: 2.14.1(typescript@4.9.5)
+      rimraf:
+        specifier: ^4.4.1
+        version: 4.4.1
+      rocketh:
+        specifier: workspace:*
+        version: link:../rocketh
+      tsup:
+        specifier: ^6.7.0
+        version: 6.7.0(typescript@4.9.5)
+      typescript:
+        specifier: ^4.9.5
+        version: 4.9.5
+
+  external/rocketh:
     dependencies:
       commander:
         specifier: ^10.0.0
@@ -71,24 +89,6 @@ importers:
       typedoc:
         specifier: ^0.23.28
         version: 0.23.28(typescript@4.9.5)
-      typescript:
-        specifier: ^4.9.5
-        version: 4.9.5
-
-  external/ahoy-hardhat:
-    devDependencies:
-      ahoy:
-        specifier: workspace:*
-        version: link:../ahoy
-      hardhat:
-        specifier: ^2.14.1
-        version: 2.14.1(typescript@4.9.5)
-      rimraf:
-        specifier: ^4.4.1
-        version: 4.4.1
-      tsup:
-        specifier: ^6.7.0
-        version: 6.7.0(typescript@4.9.5)
       typescript:
         specifier: ^4.9.5
         version: 4.9.5
@@ -681,10 +681,10 @@ packages:
 
   /@noble/hashes@1.2.0:
     resolution: {integrity: sha512-FZfhjEDbT5GRswV3C6uvLPHMiVD6lQBmpoX5+eSiPaMTXte/IKqI5dykDxzZB/WBeK/CDuQRBWarPdi3FNY2zQ==}
+    dev: true
 
   /@noble/hashes@1.3.0:
     resolution: {integrity: sha512-ilHEACi9DwqJB0pw7kv+Apvh50jiiSyR/cQ3y4W7lOR5mhvn/50FLUfsnfJz0BDZtl/RR16kXvptiv6q1msYZg==}
-    dev: true
 
   /@noble/secp256k1@1.7.1:
     resolution: {integrity: sha512-hOUk6AyBFmqVrv7k5WAw/LpszxVbj9gGN4JRkIX52fdFAj1UA61KXmZDvqVEm+pOyec3+fIeZB02LYa/pWOArw==}
@@ -4580,7 +4580,7 @@ packages:
   /viem@0.1.22(typescript@4.9.5):
     resolution: {integrity: sha512-uUh7dskbQ07YuyDWjP25CY08MnlakFOMfl2nqritUHbKsftUET9GCvf9AMjLB88bwst4ijKZXFRUQFYYmtYFww==}
     dependencies:
-      '@noble/hashes': 1.2.0
+      '@noble/hashes': 1.3.0
       '@noble/secp256k1': 1.7.1
       '@wagmi/chains': 0.2.25(typescript@4.9.5)
       abitype: 0.7.1(typescript@4.9.5)
