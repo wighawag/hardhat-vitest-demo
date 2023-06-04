@@ -25,6 +25,7 @@
 	},
 	"dependencies": {
 		"commander": "^10.0.0",
+		"eip-1193-json-provider": "^0.1.4",
 		"esbuild": "^0.17.12",
 		"esbuild-register": "^3.4.2",
 		"figlet": "^1.5.2",
@@ -33,7 +34,7 @@
 	},
 	"scripts": {
 		"build": "rimraf dist && tsup --entry src/index.ts --entry src/cli.ts --dts --format esm,cjs",
-    "dev": "rimraf dist && tsup --entry src/index.ts --entry src/cli.ts --dts --format esm,cjs --watch",
+		"dev": "rimraf dist && tsup --entry src/index.ts --entry src/cli.ts --dts --format esm,cjs --watch",
 		"gen-docs": "typedoc --out docs src",
 		"serve-docs": "ipfs-emulator --only -d docs -p 8080"
 	}

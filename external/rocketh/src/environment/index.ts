@@ -2,7 +2,7 @@ import fs from 'node:fs';
 
 import {createPublicClient, custom, http} from 'viem';
 import {Context, Deployment, Environment, PendingDeployment, UnknownDeployments} from './types';
-import {JSONRPCHTTPProvider} from '../lib/eip-1193-json-provider';
+import {JSONRPCHTTPProvider} from 'eip-1193-json-provider';
 import {Abi} from 'abitype';
 import {InternalEnvironment, ResolvedConfig} from '../internal/types';
 import path from 'node:path';
