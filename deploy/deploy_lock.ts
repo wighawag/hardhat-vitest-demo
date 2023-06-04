@@ -1,4 +1,5 @@
 import {execute} from 'rocketh';
+import 'rocketh-deploy';
 import {context} from './_context';
 
 export default execute(

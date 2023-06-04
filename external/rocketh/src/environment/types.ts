@@ -72,13 +72,12 @@ type ConfigForEIP1193Provider = BaseConfig & {
 
 export type Config = ConfigForJSONRPC | ConfigForEIP1193Provider;
 
-export type Environment<
+export interface Environment<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
 	Deployments extends UnknownDeployments = UnknownDeployments
-> = {
+> {
 	config: ResolvedConfig;
-	deploy: DeployFunction;
 	network: {
 		name: string;
 		tags: {[tag: string]: boolean};
@@ -93,26 +92,14 @@ export type Environment<
 		pendingDeployment: PendingDeployment<TAbi>
 	): Promise<Deployment<TAbi>>;
 	get<TAbi extends Abi>(name: string): Deployment<TAbi> | undefined;
-};
+}
 
-export type DeployFunctionArgs<TAbi extends Abi, TChain extends Chain = Chain> = Omit<
+export type DeploymentConstruction<TAbi extends Abi, TChain extends Chain = Chain> = Omit<
 	DeployContractParameters<TChain, TAbi>,
 	'bytecode' | 'account' | 'abi'
 > & {account: string | EIP1193Account; artifact: string | Artifact<TAbi>; abi?: TAbi};
-export type DeployFunction = <TAbi extends Abi, TChain extends Chain = Chain>(
-	name: string,
-	args: DeployFunctionArgs<TAbi, TChain>
-) => Promise<Deployment<TAbi>>;
 
-export type PendingDeployment<TAbi extends Abi = Abi> = DeployFunctionArgs<TAbi> & {
+export type PendingDeployment<TAbi extends Abi = Abi> = DeploymentConstruction<TAbi> & {
 	txHash: `0x${string}`;
 	partialDeployment: Artifact<TAbi>;
 };
-
-export type DeployOptions =
-	| {
-			skipIfAlreadyDeployed?: boolean;
-	  }
-	| {
-			alwaysOverride?: boolean;
-	  };

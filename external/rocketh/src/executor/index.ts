@@ -234,7 +234,7 @@ export async function executeDeployScripts<
 				// console.log(`Executing...`);
 				result = await deployScript.func(external);
 			} catch (e) {
-				console.error(`skip execution failed for ${deployScript.filePath}`);
+				console.error(`execution failed for ${deployScript.filePath}`);
 				throw e;
 			}
 			if (result && typeof result === 'boolean') {

@@ -1,23 +1,20 @@
 import fs from 'node:fs';
 
-import {Chain, createPublicClient, createWalletClient, custom, getAccount, http} from 'viem';
-import {
-	Artifact,
-	Context,
-	DeployFunctionArgs,
-	DeployOptions,
-	Deployment,
-	Environment,
-	PendingDeployment,
-	UnknownDeployments,
-} from './types';
+import {createPublicClient, custom, http} from 'viem';
+import {Context, Deployment, Environment, PendingDeployment, UnknownDeployments} from './types';
 import {JSONRPCHTTPProvider} from '../lib/eip-1193-json-provider';
 import {Abi} from 'abitype';
-import {DeployContractParameters, deployContract} from 'viem/contract';
 import {InternalEnvironment, ResolvedConfig} from '../internal/types';
 import path from 'node:path';
 import {JSONToString, stringToJSON} from '../utils/json';
 import {loadDeployments} from './deployments';
+
+export type EnvironmentExtenstion = (env: Environment) => Environment;
+//we store this globally so this is not lost
+(globalThis as any).extensions = [];
+export function extendEnvironment(extension: EnvironmentExtenstion): void {
+	(globalThis as any).extensions.push(extension);
+}
 
 export function createEnvironment(
 	config: ResolvedConfig,
@@ -28,7 +25,6 @@ export function createEnvironment(
 	const transport = 'provider' in config ? custom(config.provider) : http(config.nodeUrl);
 	const provider = 'provider' in config ? config.provider : new JSONRPCHTTPProvider(config.nodeUrl); // TODO use a viem wrapper ?
 	const viemClient = createPublicClient({transport});
-	const walletClient = createWalletClient({transport});
 
 	const perliminaryEnvironment = {
 		config,
@@ -156,46 +152,6 @@ export function createEnvironment(
 		return save(name, deployment);
 	}
 
-	async function deploy<TAbi extends Abi, TChain extends Chain = Chain>(
-		name: string,
-		args: DeployFunctionArgs<TAbi>,
-		options?: DeployOptions
-	) {
-		const {account, artifact, ...viemArgs} = args;
-		let address: `0x${string}`;
-		if (account.startsWith('0x')) {
-			address = account as `0x${string}`;
-		} else {
-			if (perliminaryEnvironment.accounts) {
-				address = perliminaryEnvironment.accounts[account];
-				if (!address) {
-					throw new Error(`no address for ${account}`);
-				}
-			} else {
-				throw new Error(`no accounts setup, cannot get address for ${account}`);
-			}
-		}
-		const viemAccount = getAccount(address);
-
-		const partialDeployment = (
-			typeof artifact === 'string' ? perliminaryEnvironment.artifacts[artifact] : artifact
-		) as Artifact<TAbi>;
-
-		const bytecode = partialDeployment.bytecode;
-		const abi = partialDeployment.abi;
-
-		const argsToUse: DeployContractParameters<TChain, TAbi> = {
-			...viemArgs,
-			account: viemAccount,
-			abi,
-			bytecode,
-		} as unknown as DeployContractParameters<TChain, TAbi>; // TODO why casting necessary here
-
-		const txHash = await deployContract<TChain, TAbi>(walletClient, argsToUse);
-		const pendingDeployment: PendingDeployment<TAbi> = {...args, partialDeployment, txHash};
-		return saveWhilePending(name, pendingDeployment);
-	}
-
 	async function saveWhilePending<TAbi extends Abi = Abi>(name: string, pendingDeployment: PendingDeployment<TAbi>) {
 		await saveTransaction<TAbi>(name, pendingDeployment);
 		const deployment = waitForTransactionAndSave<TAbi>(name, pendingDeployment);
@@ -203,13 +159,16 @@ export function createEnvironment(
 		return deployment;
 	}
 
-	const env: Environment = {
+	let env: Environment = {
 		...perliminaryEnvironment,
-		deploy,
 		save,
 		saveWhilePending,
 		get,
 	};
+	for (const extension of (globalThis as any).extensions) {
+		env = extension(env);
+	}
+
 	return {
 		external: env,
 		internal: {
