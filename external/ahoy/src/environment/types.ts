@@ -92,6 +92,7 @@ export type Environment<
 		name: string,
 		pendingDeployment: PendingDeployment<TAbi>
 	): Promise<Deployment<TAbi>>;
+	get<TAbi extends Abi>(name: string): Deployment<TAbi> | undefined;
 };
 
 export type DeployFunctionArgs<TAbi extends Abi, TChain extends Chain = Chain> = Omit<

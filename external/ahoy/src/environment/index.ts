@@ -17,12 +17,13 @@ import {DeployContractParameters, deployContract} from 'viem/contract';
 import {InternalEnvironment, ResolvedConfig} from '../internal/types';
 import path from 'node:path';
 import {JSONToString, stringToJSON} from '../utils/json';
+import {loadDeployments} from './deployments';
 
 export function createEnvironment(
 	config: ResolvedConfig,
 	context: Context
 ): {internal: InternalEnvironment; external: Environment} {
-	const deployments: UnknownDeployments = {};
+	const deployments: UnknownDeployments = loadDeployments(config.deployments, context.network.name, false);
 
 	const transport = 'provider' in config ? custom(config.provider) : http(config.nodeUrl);
 	const provider = 'provider' in config ? config.provider : new JSONRPCHTTPProvider(config.nodeUrl); // TODO use a viem wrapper ?
@@ -40,6 +41,10 @@ export function createEnvironment(
 			provider,
 		},
 	};
+
+	function get<TAbi extends Abi>(name: string): Deployment<TAbi> | undefined {
+		return deployments[name] as Deployment<TAbi> | undefined;
+	}
 
 	async function save<TAbi extends Abi>(name: string, deployment: Deployment<TAbi>): Promise<Deployment<TAbi>> {
 		deployments[name] = deployment;
@@ -203,6 +208,7 @@ export function createEnvironment(
 		deploy,
 		save,
 		saveWhilePending,
+		get,
 	};
 	return {
 		external: env,
