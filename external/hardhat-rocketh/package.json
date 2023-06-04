@@ -23,7 +23,7 @@
 		"rocketh": "workspace:*"
 	},
 	"scripts": {
-		"build": "rimraf dist && tsup --entry src/index.ts --dts --format esm,cjs",
-		"dev": "rimraf dist && tsup --entry src/index.ts --dts --format esm,cjs --watch"
+		"build": "rimraf dist && tsup src/index.ts --dts --format esm,cjs",
+		"dev": "rimraf dist && tsup src/index.ts --dts --format esm,cjs --watch"
 	}
 }
