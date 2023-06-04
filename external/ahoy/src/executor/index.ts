@@ -56,11 +56,7 @@ export async function executeDeployScripts<
 	let filepaths;
 	filepaths = traverseMultipleDirectory([config.scripts]);
 	filepaths = filepaths
-		.filter((v) => {
-			const included = !path.basename(v).startsWith('_');
-			console.log(v, included);
-			return included;
-		})
+		.filter((v) => !path.basename(v).startsWith('_'))
 		.sort((a: string, b: string) => {
 			if (a < b) {
 				return -1;
@@ -143,15 +139,24 @@ export async function executeDeployScripts<
 		throw new Error(`no context loaded`);
 	}
 
+	let networkName: string;
+	let saveDeployments: boolean;
+	let tags: {[tag: string]: boolean} = {};
+	if ('nodeUrl' in config) {
+		networkName = config.networkName;
+		saveDeployments = true;
+	} else {
+		networkName = 'memory';
+		tags['memory'] = true;
+		saveDeployments = false;
+	}
 	const {internal, external} = createEnvironment(config, {
 		accounts: providedContext.accounts || {},
 		artifacts: providedContext.artifacts,
-
-		// TODO
 		network: {
-			name: 'memory',
-			saveDeployments: false,
-			tags: {testnet: true},
+			name: networkName,
+			saveDeployments,
+			tags,
 		},
 	});
 

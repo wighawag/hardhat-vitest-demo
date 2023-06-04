@@ -62,6 +62,7 @@ type BaseConfig = {
 
 type ConfigForJSONRPC = BaseConfig & {
 	nodeUrl: string;
+	networkName: string;
 };
 
 type ConfigForEIP1193Provider = BaseConfig & {

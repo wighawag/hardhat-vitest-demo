@@ -40,13 +40,13 @@ function setupExtraSolcSettings(settings: {
 	}
 
 	addIfNotPresent(settings.outputSelection['*']['*'], 'abi');
-	addIfNotPresent(settings.outputSelection['*']['*'], 'evm.bytecode');
-	addIfNotPresent(settings.outputSelection['*']['*'], 'evm.deployedBytecode');
+	// addIfNotPresent(settings.outputSelection['*']['*'], 'evm.bytecode');
+	// addIfNotPresent(settings.outputSelection['*']['*'], 'evm.deployedBytecode');
 	addIfNotPresent(settings.outputSelection['*']['*'], 'metadata');
 	addIfNotPresent(settings.outputSelection['*']['*'], 'devdoc');
 	addIfNotPresent(settings.outputSelection['*']['*'], 'userdoc');
 	addIfNotPresent(settings.outputSelection['*']['*'], 'storageLayout');
-	addIfNotPresent(settings.outputSelection['*']['*'], 'evm.methodIdentifiers');
+	// addIfNotPresent(settings.outputSelection['*']['*'], 'evm.methodIdentifiers');
 	addIfNotPresent(settings.outputSelection['*']['*'], 'evm.gasEstimates');
 	// addIfNotPresent(settings.outputSelection["*"][""], "ir");
 	// addIfNotPresent(settings.outputSelection["*"][""], "irOptimized");

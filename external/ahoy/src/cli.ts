@@ -48,6 +48,7 @@ if (!network) {
 
 loadAndExecuteDeployments({
 	nodeUrl: network.rpcUrl,
+	networkName: options.network,
 	deployments: options.deployments,
 	scripts: options.scripts,
 	tags: options.tags && options.tags.split(','),

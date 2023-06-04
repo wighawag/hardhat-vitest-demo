@@ -4,3 +4,4 @@ artifacts
 .vscode/*
 !*.default
 generated
+deployments/localhost
