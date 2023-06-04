@@ -146,9 +146,17 @@ export async function executeDeployScripts<
 		networkName = config.networkName;
 		saveDeployments = true;
 	} else {
-		networkName = 'memory';
-		tags['memory'] = true;
-		saveDeployments = false;
+		if (config.networkName) {
+			networkName = config.networkName;
+		} else {
+			networkName = 'memory';
+		}
+		if (networkName === 'memory' || networkName === 'hardhat') {
+			tags['memory'] = true;
+			saveDeployments = false;
+		} else {
+			saveDeployments = true;
+		}
 	}
 	const {internal, external} = createEnvironment(config, {
 		accounts: providedContext.accounts || {},

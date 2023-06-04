@@ -54,6 +54,7 @@ export type Context<
 };
 
 type BaseConfig = {
+	networkName?: string;
 	scripts?: string;
 	deployments?: string;
 
@@ -61,8 +62,8 @@ type BaseConfig = {
 };
 
 type ConfigForJSONRPC = BaseConfig & {
-	nodeUrl: string;
 	networkName: string;
+	nodeUrl: string;
 };
 
 type ConfigForEIP1193Provider = BaseConfig & {
@@ -86,7 +87,11 @@ export type Environment<
 	deployments: Deployments;
 	accounts: NamedAccounts;
 	artifacts: Artifacts;
-	save<TAbi extends Abi = Abi>(name: string, deployment: Deployment<TAbi>): void;
+	save<TAbi extends Abi = Abi>(name: string, deployment: Deployment<TAbi>): Promise<Deployment<TAbi>>;
+	saveWhilePending<TAbi extends Abi = Abi>(
+		name: string,
+		pendingDeployment: PendingDeployment<TAbi>
+	): Promise<Deployment<TAbi>>;
 };
 
 export type DeployFunctionArgs<TAbi extends Abi, TChain extends Chain = Chain> = Omit<
@@ -98,7 +103,15 @@ export type DeployFunction = <TAbi extends Abi, TChain extends Chain = Chain>(
 	args: DeployFunctionArgs<TAbi, TChain>
 ) => Promise<Deployment<TAbi>>;
 
-export type PendingDeploymentTransaction<TAbi extends Abi = Abi> = DeployFunctionArgs<TAbi> & {
-	hash: `0x${string}`;
-	artifactObject: Artifact<TAbi>;
+export type PendingDeployment<TAbi extends Abi = Abi> = DeployFunctionArgs<TAbi> & {
+	txHash: `0x${string}`;
+	partialDeployment: Artifact<TAbi>;
 };
+
+export type DeployOptions =
+	| {
+			skipIfAlreadyDeployed?: boolean;
+	  }
+	| {
+			alwaysOverride?: boolean;
+	  };

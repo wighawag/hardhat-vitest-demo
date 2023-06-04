@@ -5,9 +5,10 @@ import {
 	Artifact,
 	Context,
 	DeployFunctionArgs,
+	DeployOptions,
 	Deployment,
 	Environment,
-	PendingDeploymentTransaction,
+	PendingDeployment,
 	UnknownDeployments,
 } from './types';
 import {JSONRPCHTTPProvider} from '../lib/eip-1193-json-provider';
@@ -40,54 +41,53 @@ export function createEnvironment(
 		},
 	};
 
-	async function save<TAbi extends Abi>(name: string, deployment: Deployment<TAbi>): Promise<UnknownDeployments> {
+	async function save<TAbi extends Abi>(name: string, deployment: Deployment<TAbi>): Promise<Deployment<TAbi>> {
 		deployments[name] = deployment;
 		if (context.network.saveDeployments) {
 			const folderPath = path.join(config.deployments, context.network.name);
 			fs.mkdirSync(folderPath, {recursive: true});
 			fs.writeFileSync(`${folderPath}/${name}.json`, JSONToString(deployments, 2));
 		}
-		return deployments;
+		return deployment;
 	}
 
 	async function recoverTransactionsIfAny<TAbi extends Abi = Abi>(): Promise<void> {
 		const filepath = path.join(config.deployments, context.network.name, '.pending_transactions.json');
-		let existingTransactions: {name: string; transaction: PendingDeploymentTransaction<TAbi>}[];
+		let existingPendingDeployments: {name: string; transaction: PendingDeployment<TAbi>}[];
 		try {
-			existingTransactions = stringToJSON(fs.readFileSync(filepath, 'utf-8'));
+			existingPendingDeployments = stringToJSON(fs.readFileSync(filepath, 'utf-8'));
 		} catch {
-			existingTransactions = [];
+			existingPendingDeployments = [];
 		}
-		if (existingTransactions.length > 0) {
-			while (existingTransactions.length > 0) {
-				const pendingTransaction = existingTransactions.shift();
+		if (existingPendingDeployments.length > 0) {
+			while (existingPendingDeployments.length > 0) {
+				const pendingTransaction = existingPendingDeployments.shift();
 				if (pendingTransaction) {
-					console.log(`recovering ${pendingTransaction.name} with transaction ${pendingTransaction.transaction.hash}`);
+					console.log(
+						`recovering ${pendingTransaction.name} with transaction ${pendingTransaction.transaction.txHash}`
+					);
 					await waitForTransactionAndSave(pendingTransaction.name, pendingTransaction.transaction);
-					console.log(`transaction ${pendingTransaction.transaction.hash} complete`);
-					fs.writeFileSync(filepath, JSONToString(existingTransactions, 2));
+					console.log(`transaction ${pendingTransaction.transaction.txHash} complete`);
+					fs.writeFileSync(filepath, JSONToString(existingPendingDeployments, 2));
 				}
 			}
 			fs.rmSync(filepath);
 		}
 	}
 
-	async function saveTransaction<TAbi extends Abi = Abi>(
-		name: string,
-		transaction: PendingDeploymentTransaction<TAbi>
-	) {
+	async function saveTransaction<TAbi extends Abi = Abi>(name: string, transaction: PendingDeployment<TAbi>) {
 		if (context.network.saveDeployments) {
 			const folderpath = path.join(config.deployments, context.network.name);
 			fs.mkdirSync(folderpath, {recursive: true});
 			const filepath = path.join(folderpath, '.pending_transactions.json');
-			let existingTransactions: {name: string; transaction: PendingDeploymentTransaction<TAbi>}[];
+			let existingPendingDeployments: {name: string; transaction: PendingDeployment<TAbi>}[];
 			try {
-				existingTransactions = stringToJSON(fs.readFileSync(filepath, 'utf-8'));
+				existingPendingDeployments = stringToJSON(fs.readFileSync(filepath, 'utf-8'));
 			} catch {
-				existingTransactions = [];
+				existingPendingDeployments = [];
 			}
-			existingTransactions.push({name, transaction});
-			fs.writeFileSync(filepath, JSONToString(existingTransactions, 2));
+			existingPendingDeployments.push({name, transaction});
+			fs.writeFileSync(filepath, JSONToString(existingPendingDeployments, 2));
 		}
 		return deployments;
 	}
@@ -95,17 +95,17 @@ export function createEnvironment(
 	async function deleteTransaction<TAbi extends Abi = Abi>(hash: string) {
 		if (context.network.saveDeployments) {
 			const filepath = path.join(config.deployments, context.network.name, '.pending_transactions.json');
-			let existingTransactions: {name: string; transaction: PendingDeploymentTransaction<TAbi>}[];
+			let existingPendingDeployments: {name: string; transaction: PendingDeployment<TAbi>}[];
 			try {
-				existingTransactions = stringToJSON(fs.readFileSync(filepath, 'utf-8'));
+				existingPendingDeployments = stringToJSON(fs.readFileSync(filepath, 'utf-8'));
 			} catch {
-				existingTransactions = [];
+				existingPendingDeployments = [];
 			}
-			existingTransactions = existingTransactions.filter((v) => v.transaction.hash !== hash);
-			if (existingTransactions.length === 0) {
+			existingPendingDeployments = existingPendingDeployments.filter((v) => v.transaction.txHash !== hash);
+			if (existingPendingDeployments.length === 0) {
 				fs.rmSync(filepath);
 			} else {
-				fs.writeFileSync(filepath, JSONToString(existingTransactions, 2));
+				fs.writeFileSync(filepath, JSONToString(existingPendingDeployments, 2));
 			}
 		}
 	}
@@ -118,16 +118,16 @@ export function createEnvironment(
 
 	async function waitForTransactionAndSave<TAbi extends Abi = Abi>(
 		name: string,
-		pendingTransaction: PendingDeploymentTransaction<TAbi>
+		pendingDeployment: PendingDeployment<TAbi>
 	): Promise<Deployment<TAbi>> {
 		const receipt = await viemClient.waitForTransactionReceipt({
-			hash: pendingTransaction.hash,
+			hash: pendingDeployment.txHash,
 		});
 
 		if (!receipt.contractAddress) {
 			throw new Error(`failed to deploy contract ${name}`);
 		}
-		const {abi, ...artifactObjectWithoutABI} = pendingTransaction.artifactObject;
+		const {abi, ...artifactObjectWithoutABI} = pendingDeployment.partialDeployment;
 
 		// TODO options
 		for (const key of Object.keys(artifactObjectWithoutABI)) {
@@ -144,15 +144,18 @@ export function createEnvironment(
 
 		const deployment = {
 			address: receipt.contractAddress,
-			txHash: pendingTransaction.hash,
+			txHash: pendingDeployment.txHash,
 			abi,
 			...artifactObjectWithoutABI,
 		};
-		await save(name, deployment);
-		return deployment;
+		return save(name, deployment);
 	}
 
-	async function deploy<TAbi extends Abi, TChain extends Chain = Chain>(name: string, args: DeployFunctionArgs<TAbi>) {
+	async function deploy<TAbi extends Abi, TChain extends Chain = Chain>(
+		name: string,
+		args: DeployFunctionArgs<TAbi>,
+		options?: DeployOptions
+	) {
 		const {account, artifact, ...viemArgs} = args;
 		let address: `0x${string}`;
 		if (account.startsWith('0x')) {
@@ -169,12 +172,12 @@ export function createEnvironment(
 		}
 		const viemAccount = getAccount(address);
 
-		const artifactObject = (
+		const partialDeployment = (
 			typeof artifact === 'string' ? perliminaryEnvironment.artifacts[artifact] : artifact
 		) as Artifact<TAbi>;
 
-		const bytecode = artifactObject.bytecode;
-		const abi = artifactObject.abi;
+		const bytecode = partialDeployment.bytecode;
+		const abi = partialDeployment.abi;
 
 		const argsToUse: DeployContractParameters<TChain, TAbi> = {
 			...viemArgs,
@@ -184,11 +187,14 @@ export function createEnvironment(
 		} as unknown as DeployContractParameters<TChain, TAbi>; // TODO why casting necessary here
 
 		const txHash = await deployContract<TChain, TAbi>(walletClient, argsToUse);
-		const pendingTransaction: PendingDeploymentTransaction<TAbi> = {...args, artifactObject, hash: txHash};
-		await saveTransaction<TAbi>(name, pendingTransaction);
+		const pendingDeployment: PendingDeployment<TAbi> = {...args, partialDeployment, txHash};
+		return saveWhilePending(name, pendingDeployment);
+	}
 
-		const deployment = waitForTransactionAndSave<TAbi>(name, pendingTransaction);
-		await deleteTransaction(txHash);
+	async function saveWhilePending<TAbi extends Abi = Abi>(name: string, pendingDeployment: PendingDeployment<TAbi>) {
+		await saveTransaction<TAbi>(name, pendingDeployment);
+		const deployment = waitForTransactionAndSave<TAbi>(name, pendingDeployment);
+		await deleteTransaction(pendingDeployment.txHash);
 		return deployment;
 	}
 
@@ -196,6 +202,7 @@ export function createEnvironment(
 		...perliminaryEnvironment,
 		deploy,
 		save,
+		saveWhilePending,
 	};
 	return {
 		external: env,
