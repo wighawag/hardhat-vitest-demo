@@ -29,7 +29,6 @@
 		"esbuild": "^0.17.12",
 		"esbuild-register": "^3.4.2",
 		"figlet": "^1.5.2",
-		"isomorphic-unfetch": "^4.0.2",
 		"viem": "^0.1.22"
 	},
 	"scripts": {
