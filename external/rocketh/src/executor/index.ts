@@ -33,28 +33,40 @@ export function execute<
 
 export type ConfigOptions = {network: string; deployments?: string; scripts?: string; tags?: string};
 
-export function readConfig(options: ConfigOptions): Config {
+export function readConfig(options: ConfigOptions, extra?: {ignoreMissingRPC?: boolean}): Config {
 	type Networks = {[name: string]: {rpcUrl: string}};
 	type ConfigFile = {networks: Networks};
-	let configFile: ConfigFile;
+	let configFile: ConfigFile | undefined;
 	try {
 		const configString = fs.readFileSync('./rocketh.json', 'utf-8');
 		configFile = JSON.parse(configString);
-	} catch {
-		console.error(`could not read rocketh.json`);
-		process.exit(1);
-	}
+	} catch {}
 
 	let nodeUrl: string;
 	const fromEnv = process.env['ETH_NODE_URI_' + options.network];
 	if (typeof fromEnv === 'string') {
 		nodeUrl = fromEnv;
 	} else {
-		const network = configFile.networks && configFile.networks[options.network];
-		if (!network) {
-			console.error(`network "${options.network}" is not configured. Please add it to the rocketh.json file`);
+		if (configFile) {
+			const network = configFile.networks && configFile.networks[options.network];
+			if (network) {
+				nodeUrl = network.rpcUrl;
+			} else {
+				if (extra?.ignoreMissingRPC) {
+					nodeUrl = '';
+				} else {
+					console.error(`network "${options.network}" is not configured. Please add it to the rocketh.json file`);
+					process.exit(1);
+				}
+			}
+		} else {
+			if (extra?.ignoreMissingRPC) {
+				nodeUrl = '';
+			} else {
+				console.error(`network "${options.network}" is not configured. Please add it to the rocketh.json file`);
+				process.exit(1);
+			}
 		}
-		nodeUrl = network.rpcUrl;
 	}
 
 	return {
@@ -66,8 +78,8 @@ export function readConfig(options: ConfigOptions): Config {
 	};
 }
 
-export function readAndResolveConfig(options: ConfigOptions): ResolvedConfig {
-	return resolveConfig(readConfig(options));
+export function readAndResolveConfig(options: ConfigOptions, extra?: {ignoreMissingRPC?: boolean}): ResolvedConfig {
+	return resolveConfig(readConfig(options, extra));
 }
 
 export function resolveConfig(config: Config): ResolvedConfig {

@@ -236,11 +236,10 @@ export async function submitSourcesToEtherscan(
 			`${host}/api?module=contract&action=getabi&address=${address}&apikey=${etherscanApiKey}`
 		);
 		const json = await abiResponse.json();
-		const {data: abiData} = json;
 		let contractABI;
-		if (abiData.status !== '0') {
+		if (json.status !== '0') {
 			try {
-				contractABI = JSON.parse(abiData.result);
+				contractABI = JSON.parse(json.result);
 			} catch (e) {
 				logError(e);
 				return;
@@ -346,7 +345,7 @@ export async function submitSourcesToEtherscan(
 
 		let constructorArguments: string | undefined;
 		if (deployment.argsData) {
-			constructorArguments = deployment.argsData;
+			constructorArguments = deployment.argsData.slice(2);
 		} else {
 			logInfo(`no args found, assuming empty constructor...`);
 		}
@@ -362,7 +361,7 @@ export async function submitSourcesToEtherscan(
 			codeformat: 'solidity-standard-json-input',
 			contractname: contractNamePath,
 			compilerversion: `v${metadata.compiler.version}`, // see http://etherscan.io/solcversions for list of support versions
-			constructorArguments,
+			constructorArguements: constructorArguments, // note the spelling mistake by etherscan
 			licenseType,
 		};
 
@@ -373,6 +372,7 @@ export async function submitSourcesToEtherscan(
 				if (typeof entry[1] === 'number') {
 					data.append(entry[0], entry[1].toString());
 				} else {
+					data.append(entry[0], entry[1]);
 				}
 			}
 		}
@@ -382,15 +382,14 @@ export async function submitSourcesToEtherscan(
 			body: data,
 		});
 		const submissionJson = await submissionResponse.json();
-		const {data: submissionData} = submissionJson;
 
 		let guid: string;
-		if (submissionData.status === '1') {
-			guid = submissionData.result;
+		if (submissionJson.status === '1') {
+			guid = submissionJson.result;
 		} else {
 			logError(
-				`contract ${name} failed to submit : "${submissionData.message}" : "${submissionData.result}"`,
-				submissionData
+				`contract ${name} failed to submit : "${submissionJson.message}" : "${submissionJson.result}"`,
+				submissionJson
 			);
 			writeRequestIfRequested(env?.logErrorOnFailure || false, networkName, name, formDataAsString, postData);
 			return;
@@ -407,20 +406,19 @@ export async function submitSourcesToEtherscan(
 				`${host}/api?apikey=${etherscanApiKey}&guid=${guid}&module=contract&action=checkverifystatus`
 			);
 			const json = await statusResponse.json();
-			const {data: statusData} = json;
 
 			// blockscout seems to return status == 1 in case of failure
 			// so we check string first
-			if (statusData.result === 'Pending in queue') {
+			if (json.result === 'Pending in queue') {
 				return undefined;
 			}
-			if (statusData.result !== 'Fail - Unable to verify') {
-				if (statusData.status === '1') {
+			if (json.result !== 'Fail - Unable to verify') {
+				if (json.status === '1') {
 					// console.log(statusData);
 					return 'success';
 				}
 			}
-			logError(`Failed to verify contract ${name}: ${statusData.message}, ${statusData.result}`);
+			logError(`Failed to verify contract ${name}: ${json.message}, ${json.result}`);
 
 			logError(
 				JSON.stringify(
@@ -433,7 +431,7 @@ export async function submitSourcesToEtherscan(
 						codeformat: 'solidity-standard-json-input',
 						contractname: contractNamePath,
 						compilerversion: `v${metadata.compiler.version}`, // see http://etherscan.io/solcversions for list of support versions
-						constructorArguments,
+						constructorArguements: constructorArguments, // note the spelling mistake by etherscan
 						licenseType,
 					},
 					null,

@@ -78,7 +78,7 @@ export async function createEnvironment(
 		deployments[name] = deployment;
 		if (context.network.saveDeployments) {
 			const folderPath = ensureDeploymentFolder();
-			fs.writeFileSync(`${folderPath}/${name}.json`, JSONToString(deployments, 2));
+			fs.writeFileSync(`${folderPath}/${name}.json`, JSONToString(deployment, 2));
 		}
 		return deployment;
 	}
