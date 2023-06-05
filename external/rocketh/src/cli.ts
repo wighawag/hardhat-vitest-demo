@@ -1,9 +1,12 @@
 #! /usr/bin/env node
-import fs from 'node:fs';
+import {loadEnv} from 'ldenv';
 import {loadAndExecuteDeployments, readConfig} from '.';
 import {Command, Option} from 'commander';
 import pkg from '../package.json';
 import figlet from 'figlet';
+
+loadEnv();
+
 console.log(`------------------------------------------------`);
 console.log(figlet.textSync('rocketh'));
 console.log(`------------------------------------------------`);

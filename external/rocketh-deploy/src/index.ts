@@ -71,13 +71,7 @@ extendEnvironment((env: Environment) => {
 
 		const calldata = encodeDeployData(argsToUse);
 		const argsData = `0x${calldata.replace(bytecode, '')}` as `0x${string}`;
-
-		// const txHash = await deployContract<TChain, TAbi>(walletClient, argsToUse);
-		const txHash = await walletClient.sendTransaction({
-			...(viemArgs as any),
-			account: viemAccount,
-			data: calldata,
-		});
+		const txHash = await deployContract<TChain, TAbi>(walletClient, argsToUse);
 
 		const partialDeployment: PartialDeployment<TAbi> = {
 			...artifactToUse,

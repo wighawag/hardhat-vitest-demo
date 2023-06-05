@@ -1,7 +1,7 @@
 import {HDAccountsUserConfig, HttpNetworkUserConfig, NetworksUserConfig} from 'hardhat/types';
 export function getRPC(networkName: string): string | undefined {
 	if (networkName) {
-		const uri = process.env['ETH_NODE_URI_' + networkName.toUpperCase()];
+		const uri = process.env['ETH_NODE_URI_' + networkName];
 		if (uri && uri !== '') {
 			return uri;
 		}
@@ -27,7 +27,7 @@ export function getRPC(networkName: string): string | undefined {
 
 export function getMnemonic(networkName?: string): string {
 	if (networkName) {
-		const mnemonic = process.env['MNEMONIC_' + networkName.toUpperCase()];
+		const mnemonic = process.env['MNEMONIC_' + networkName];
 		if (mnemonic && mnemonic !== '') {
 			return mnemonic;
 		}

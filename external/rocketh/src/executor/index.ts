@@ -45,13 +45,20 @@ export function readConfig(options: ConfigOptions): Config {
 		process.exit(1);
 	}
 
-	const network = configFile.networks && configFile.networks[options.network];
-	if (!network) {
-		console.error(`network "${options.network}" is not configured. Please add it to the rocketh.json file`);
+	let nodeUrl: string;
+	const fromEnv = process.env['ETH_NODE_URI_' + options.network];
+	if (typeof fromEnv === 'string') {
+		nodeUrl = fromEnv;
+	} else {
+		const network = configFile.networks && configFile.networks[options.network];
+		if (!network) {
+			console.error(`network "${options.network}" is not configured. Please add it to the rocketh.json file`);
+		}
+		nodeUrl = network.rpcUrl;
 	}
 
 	return {
-		nodeUrl: network.rpcUrl,
+		nodeUrl,
 		networkName: options.network,
 		deployments: options.deployments,
 		scripts: options.scripts,

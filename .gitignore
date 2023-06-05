@@ -5,3 +5,5 @@ artifacts
 !*.default
 generated
 deployments/localhost
+
+*.local
