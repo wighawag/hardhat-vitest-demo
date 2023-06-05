@@ -16,7 +16,7 @@
 		"@types/figlet": "^1.5.5",
 		"@types/node": "^18.15.5",
 		"abitype": "^0.7.1",
-		"eip-1193": "^0.2.3",
+		"eip-1193": "^0.4.2",
 		"ipfs-gateway-emulator": "4.2.1-ipfs.2",
 		"rimraf": "^4.4.1",
 		"tsup": "^6.7.0",
@@ -25,7 +25,7 @@
 	},
 	"dependencies": {
 		"commander": "^10.0.0",
-		"eip-1193-json-provider": "^0.1.4",
+		"eip-1193-json-provider": "^0.1.5",
 		"esbuild": "^0.17.12",
 		"esbuild-register": "^3.4.2",
 		"figlet": "^1.5.2",

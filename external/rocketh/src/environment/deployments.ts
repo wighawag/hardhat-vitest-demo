@@ -50,7 +50,7 @@ export function loadDeployments(
 	});
 
 	for (const fileName of fileNames) {
-		if (fileName.substr(fileName.length - 5) === '.json') {
+		if (fileName.substring(fileName.length - 5) === '.json') {
 			const deploymentFileName = path.join(deployPath, fileName);
 			let deployment = JSON.parse(fs.readFileSync(deploymentFileName).toString());
 			// truffleChainId argument:

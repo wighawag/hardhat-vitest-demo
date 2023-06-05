@@ -8,8 +8,8 @@ import type {
 	PartialDeployment,
 } from 'rocketh';
 import {extendEnvironment} from 'rocketh';
-import {Account, Chain, CustomTransport, createPublicClient, createWalletClient, custom} from 'viem';
-import {DeployContractParameters, deployContract, encodeDeployData} from 'viem/contract';
+import {Chain} from 'viem';
+import {DeployContractParameters, encodeDeployData} from 'viem/contract';
 
 declare module 'rocketh' {
 	interface Environment {
@@ -31,17 +31,6 @@ export type DeployOptions =
 	  };
 
 extendEnvironment((env: Environment) => {
-	const transport = custom(env.network.provider);
-	const viemClient = createPublicClient({transport});
-	const walletClient = createWalletClient<CustomTransport, Chain>({
-		transport,
-		chain: {
-			id: parseInt(env.network.chainId),
-			network: env.network.name,
-			name: env.network.name,
-		} as Chain,
-	}); // TODO type
-
 	async function deploy<TAbi extends Abi, TChain extends Chain = Chain>(
 		name: string,
 		args: DeploymentConstruction<TAbi>,
@@ -77,7 +66,25 @@ extendEnvironment((env: Environment) => {
 
 		const calldata = encodeDeployData(argsToUse);
 		const argsData = `0x${calldata.replace(bytecode, '')}` as `0x${string}`;
-		const txHash = await deployContract<TAbi, TChain, Account, undefined>(walletClient as any, argsToUse); // TODO type
+
+		const txHash = await env.network.provider.request({
+			method: 'eth_sendTransaction',
+			params: [
+				{
+					type: '0x2',
+					from: address,
+					chainId: `0x${parseInt(env.network.chainId).toString(16)}` as `0x${string}`,
+					data: calldata,
+					gas: viemArgs.gas && (`0x${viemArgs.gas.toString(16)}` as `0x${string}`),
+					// gasPrice: viemArgs.gasPrice && `0x${viemArgs.gasPrice.toString(16)}` as `0x${string}`,
+					maxFeePerGas: viemArgs.maxFeePerGas && (`0x${viemArgs.maxFeePerGas.toString(16)}` as `0x${string}`),
+					maxPriorityFeePerGas:
+						viemArgs.maxPriorityFeePerGas && (`0x${viemArgs.maxPriorityFeePerGas.toString(16)}` as `0x${string}`),
+					// value: `0x${viemArgs.value?.toString(16)}` as `0x${string}`,
+					nonce: viemArgs.nonce && (`0x${viemArgs.nonce.toString(16)}` as `0x${string}`),
+				},
+			],
+		});
 
 		const partialDeployment: PartialDeployment<TAbi> = {
 			...artifactToUse,

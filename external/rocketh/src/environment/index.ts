@@ -1,13 +1,14 @@
 import fs from 'node:fs';
 
-import {createPublicClient, custom, http} from 'viem';
-import {Context, Deployment, Environment, PendingDeployment, ResolvedConfig, UnknownDeployments} from './types';
+import {createPublicClient, custom} from 'viem';
+import {Context, Deployment, Environment, PendingDeployment, ResolvedConfig} from './types';
 import {JSONRPCHTTPProvider} from 'eip-1193-json-provider';
 import {Abi} from 'abitype';
 import {InternalEnvironment} from '../internal/types';
 import path from 'node:path';
 import {JSONToString, stringToJSON} from '../utils/json';
 import {loadDeployments} from './deployments';
+import {EIP1193DATA, EIP1193TransactionEIP1193DATA} from 'eip-1193';
 
 export type EnvironmentExtenstion = (env: Environment) => Environment;
 //we store this globally so this is not lost
@@ -20,8 +21,9 @@ export async function createEnvironment(
 	config: ResolvedConfig,
 	context: Context
 ): Promise<{internal: InternalEnvironment; external: Environment}> {
-	const transport = 'provider' in config ? custom(config.provider) : http(config.nodeUrl);
-	const provider = 'provider' in config ? config.provider : new JSONRPCHTTPProvider(config.nodeUrl); // TODO use a viem wrapper ?
+	const provider = 'provider' in config ? config.provider : new JSONRPCHTTPProvider(config.nodeUrl);
+
+	const transport = custom(provider);
 	const viemClient = createPublicClient({transport});
 
 	const chainId = (await viemClient.getChainId()).toString();
@@ -50,6 +52,23 @@ export async function createEnvironment(
 		}
 		return folderPath;
 	}
+
+	// const signer = {
+	// 	async sendTransaction(
+	// 		provider: EIP1193ProviderWithoutEvents,
+	// 		account: {
+	// 			addresss: EIP1193Account;
+	// 			config: unknown;
+	// 		},
+	// 		transaction: EIP1193TransactionEIP1193DATA
+	// 	): Promise<EIP1193DATA> {
+	// 		return '0x';
+	// 	},
+	// };
+
+	// async function sendTransaction(transaction: EIP1193TransactionEIP1193DATA): Promise<EIP1193DATA> {
+	// 	return '0x';
+	// }
 
 	function get<TAbi extends Abi>(name: string): Deployment<TAbi> | undefined {
 		return deployments[name] as Deployment<TAbi> | undefined;

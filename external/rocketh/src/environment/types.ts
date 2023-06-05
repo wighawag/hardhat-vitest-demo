@@ -1,4 +1,4 @@
-import {EIP1193Account, EIP1193DATA, EIP1193ProviderWithoutEvents} from 'eip-1193';
+import {EIP1193Account, EIP1193DATA, EIP1193ProviderWithoutEvents, EIP1193TransactionEIP1193DATA} from 'eip-1193';
 import {Abi, Narrow} from 'abitype';
 import type {DeployContractParameters} from 'viem/contract';
 import type {Chain} from 'viem';
