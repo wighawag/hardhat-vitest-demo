@@ -101,7 +101,7 @@ export interface Environment<
 }
 
 export type DeploymentConstruction<TAbi extends Abi, TChain extends Chain = Chain> = Omit<
-	DeployContractParameters<TChain, TAbi>,
+	DeployContractParameters<TAbi, TChain>,
 	'bytecode' | 'account' | 'abi'
 > & {account: string | EIP1193Account; artifact: string | Artifact<TAbi>};
 

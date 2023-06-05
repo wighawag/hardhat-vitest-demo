@@ -8,7 +8,7 @@ import type {
 	PartialDeployment,
 } from 'rocketh';
 import {extendEnvironment} from 'rocketh';
-import {Chain, createPublicClient, createWalletClient, custom, getAccount} from 'viem';
+import {Account, Chain, CustomTransport, createPublicClient, createWalletClient, custom} from 'viem';
 import {DeployContractParameters, deployContract, encodeDeployData} from 'viem/contract';
 
 declare module 'rocketh' {
@@ -33,7 +33,14 @@ export type DeployOptions =
 extendEnvironment((env: Environment) => {
 	const transport = custom(env.network.provider);
 	const viemClient = createPublicClient({transport});
-	const walletClient = createWalletClient({transport});
+	const walletClient = createWalletClient<CustomTransport, Chain>({
+		transport,
+		chain: {
+			id: parseInt(env.network.chainId),
+			network: env.network.name,
+			name: env.network.name,
+		} as Chain,
+	}); // TODO type
 
 	async function deploy<TAbi extends Abi, TChain extends Chain = Chain>(
 		name: string,
@@ -54,7 +61,6 @@ extendEnvironment((env: Environment) => {
 				throw new Error(`no accounts setup, cannot get address for ${account}`);
 			}
 		}
-		const viemAccount = getAccount(address);
 
 		// TODO throw specific error if artifact not found
 		const artifactToUse = (typeof artifact === 'string' ? env.artifacts[artifact] : artifact) as Artifact<TAbi>;
@@ -62,16 +68,16 @@ extendEnvironment((env: Environment) => {
 		const bytecode = artifactToUse.bytecode;
 		const abi = artifactToUse.abi;
 
-		const argsToUse: DeployContractParameters<TChain, TAbi> = {
+		const argsToUse: DeployContractParameters<TAbi, TChain> = {
 			...viemArgs,
-			account: viemAccount,
+			account,
 			abi,
 			bytecode,
-		} as unknown as DeployContractParameters<TChain, TAbi>; // TODO why casting necessary here
+		} as unknown as DeployContractParameters<TAbi, TChain>; // TODO why casting necessary here
 
 		const calldata = encodeDeployData(argsToUse);
 		const argsData = `0x${calldata.replace(bytecode, '')}` as `0x${string}`;
-		const txHash = await deployContract<TChain, TAbi>(walletClient, argsToUse);
+		const txHash = await deployContract<TAbi, TChain, Account, undefined>(walletClient as any, argsToUse); // TODO type
 
 		const partialDeployment: PartialDeployment<TAbi> = {
 			...artifactToUse,
