@@ -5,10 +5,11 @@
   "type": "module",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "hardhat": "^2.14.1",
+    "hardhat-rocketh": "workspace:*",
+    "ldenv": "^0.3.5",
     "rocketh": "workspace:*",
     "rocketh-deploy": "workspace:*",
-    "hardhat-rocketh": "workspace:*",
-    "hardhat": "^2.14.1",
     "set-defaults": "^0.0.1",
     "viem": "^0.3.50",
     "vitest": "^0.31.4"

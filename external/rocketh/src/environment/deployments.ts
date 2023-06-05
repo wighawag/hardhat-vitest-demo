@@ -25,9 +25,7 @@ export function loadDeployments(
 		if (fs.existsSync(chainIdFilepath)) {
 			chainId = fs.readFileSync(chainIdFilepath).toString().trim();
 		} else {
-			throw new Error(
-				`with hardhat-deploy >= 0.6 you are expected to create a '.chainId' file in the deployment folder`
-			);
+			throw new Error(`A .chainId' file is expected to be present in the deployment folder for network ${subPath}`);
 		}
 
 		if (expectedChainId) {

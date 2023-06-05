@@ -6,6 +6,8 @@ import {TASK_COMPILE_SOLIDITY_EMIT_ARTIFACTS} from 'hardhat/builtin-tasks/task-n
 import {loadAndExecuteDeployments} from 'rocketh';
 import {HardhatConfig, HardhatUserConfig} from 'hardhat/types';
 
+export * from './utils';
+
 function addIfNotPresent(array: string[], value: string) {
 	if (array.indexOf(value) === -1) {
 		array.push(value);
