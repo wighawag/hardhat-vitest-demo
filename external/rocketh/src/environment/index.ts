@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 
 import {createPublicClient, custom, http} from 'viem';
-import {Context, Deployment, Environment, PendingDeployment, UnknownDeployments} from './types';
+import {Context, Deployment, Environment, PendingDeployment, ResolvedConfig, UnknownDeployments} from './types';
 import {JSONRPCHTTPProvider} from 'eip-1193-json-provider';
 import {Abi} from 'abitype';
-import {InternalEnvironment, ResolvedConfig} from '../internal/types';
+import {InternalEnvironment} from '../internal/types';
 import path from 'node:path';
 import {JSONToString, stringToJSON} from '../utils/json';
 import {loadDeployments} from './deployments';
@@ -16,15 +16,17 @@ export function extendEnvironment(extension: EnvironmentExtenstion): void {
 	(globalThis as any).extensions.push(extension);
 }
 
-export function createEnvironment(
+export async function createEnvironment(
 	config: ResolvedConfig,
 	context: Context
-): {internal: InternalEnvironment; external: Environment} {
-	const deployments: UnknownDeployments = loadDeployments(config.deployments, context.network.name, false);
-
+): Promise<{internal: InternalEnvironment; external: Environment}> {
 	const transport = 'provider' in config ? custom(config.provider) : http(config.nodeUrl);
 	const provider = 'provider' in config ? config.provider : new JSONRPCHTTPProvider(config.nodeUrl); // TODO use a viem wrapper ?
 	const viemClient = createPublicClient({transport});
+
+	const chainId = (await viemClient.getChainId()).toString();
+
+	const {deployments} = loadDeployments(config.deployments, context.network.name, false, chainId);
 
 	const perliminaryEnvironment = {
 		config,
@@ -32,11 +34,22 @@ export function createEnvironment(
 		accounts: context.accounts || {},
 		artifacts: context.artifacts,
 		network: {
+			chainId,
 			name: context.network.name,
 			tags: context.network.tags,
 			provider,
 		},
 	};
+
+	function ensureDeploymentFolder(): string {
+		const folderPath = path.join(config.deployments, context.network.name);
+		fs.mkdirSync(folderPath, {recursive: true});
+		const chainIdFilepath = path.join(folderPath, '.chainId');
+		if (!fs.existsSync(chainIdFilepath)) {
+			fs.writeFileSync(chainIdFilepath, chainId);
+		}
+		return folderPath;
+	}
 
 	function get<TAbi extends Abi>(name: string): Deployment<TAbi> | undefined {
 		return deployments[name] as Deployment<TAbi> | undefined;
@@ -45,8 +58,7 @@ export function createEnvironment(
 	async function save<TAbi extends Abi>(name: string, deployment: Deployment<TAbi>): Promise<Deployment<TAbi>> {
 		deployments[name] = deployment;
 		if (context.network.saveDeployments) {
-			const folderPath = path.join(config.deployments, context.network.name);
-			fs.mkdirSync(folderPath, {recursive: true});
+			const folderPath = ensureDeploymentFolder();
 			fs.writeFileSync(`${folderPath}/${name}.json`, JSONToString(deployments, 2));
 		}
 		return deployment;
@@ -78,9 +90,8 @@ export function createEnvironment(
 
 	async function saveTransaction<TAbi extends Abi = Abi>(name: string, transaction: PendingDeployment<TAbi>) {
 		if (context.network.saveDeployments) {
-			const folderpath = path.join(config.deployments, context.network.name);
-			fs.mkdirSync(folderpath, {recursive: true});
-			const filepath = path.join(folderpath, '.pending_transactions.json');
+			const folderPath = ensureDeploymentFolder();
+			const filepath = path.join(folderPath, '.pending_transactions.json');
 			let existingPendingDeployments: {name: string; transaction: PendingDeployment<TAbi>}[];
 			try {
 				existingPendingDeployments = stringToJSON(fs.readFileSync(filepath, 'utf-8'));

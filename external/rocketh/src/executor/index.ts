@@ -1,13 +1,14 @@
 import {traverseMultipleDirectory} from '../utils/fs';
 import path from 'node:path';
+import fs from 'node:fs';
 import type {
 	Config,
 	Environment,
+	ResolvedConfig,
 	UnknownArtifacts,
 	UnknownDeployments,
 	UnknownNamedAccounts,
 } from '../environment/types';
-import {ResolvedConfig} from '../internal/types';
 import {createEnvironment} from '../environment';
 import {DeployScriptFunction, DeployScriptModule, ProvidedContext} from './types';
 
@@ -30,17 +31,55 @@ export function execute<
 	return scriptModule as unknown as DeployScriptModule<Artifacts, NamedAccounts, Deployments>;
 }
 
+export type ConfigOptions = {network: string; deployments?: string; scripts?: string; tags?: string};
+
+export function readConfig(options: ConfigOptions): Config {
+	type Networks = {[name: string]: {rpcUrl: string}};
+	type ConfigFile = {networks: Networks};
+	let configFile: ConfigFile;
+	try {
+		const configString = fs.readFileSync('./rocketh.json', 'utf-8');
+		configFile = JSON.parse(configString);
+	} catch {
+		console.error(`could not read rocketh.json`);
+		process.exit(1);
+	}
+
+	const network = configFile.networks && configFile.networks[options.network];
+	if (!network) {
+		console.error(`network "${options.network}" is not configured. Please add it to the rocketh.json file`);
+	}
+
+	return {
+		nodeUrl: network.rpcUrl,
+		networkName: options.network,
+		deployments: options.deployments,
+		scripts: options.scripts,
+		tags: typeof options.tags === 'undefined' ? undefined : options.tags.split(','),
+	};
+}
+
+export function readAndResolveConfig(options: ConfigOptions): ResolvedConfig {
+	return resolveConfig(readConfig(options));
+}
+
+export function resolveConfig(config: Config): ResolvedConfig {
+	const resolvedConfig: ResolvedConfig = {
+		...config,
+		networkName: config.networkName || 'memory',
+		deployments: config.deployments || 'deployments',
+		scripts: config.scripts || 'deploy',
+		tags: config.tags || [],
+	};
+	return resolvedConfig;
+}
+
 export async function loadAndExecuteDeployments<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
 	Deployments extends UnknownDeployments = UnknownDeployments
 >(config: Config) {
-	const resolvedConfig: ResolvedConfig = {
-		...config,
-		deployments: config.deployments || 'deployments',
-		scripts: config.scripts || 'deploy',
-		tags: config.tags || [],
-	};
+	const resolvedConfig = resolveConfig(config);
 
 	return executeDeployScripts<Artifacts, NamedAccounts, Deployments>(resolvedConfig);
 
@@ -158,7 +197,7 @@ export async function executeDeployScripts<
 			saveDeployments = true;
 		}
 	}
-	const {internal, external} = createEnvironment(config, {
+	const {internal, external} = await createEnvironment(config, {
 		accounts: providedContext.accounts || {},
 		artifacts: providedContext.artifacts,
 		network: {

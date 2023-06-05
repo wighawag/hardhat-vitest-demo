@@ -1,11 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import 'isomorphic-unfetch';
-import FormData from 'form-data';
-import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import {Readable} from 'stream';
+import {UnknownDeployments} from 'rocketh';
+import {SourcifyOptions} from '.';
+
+function sleep(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function log(...args: any[]) {
 	console.log(...args);
@@ -35,16 +37,18 @@ function ensureTrailingSlash(s: string): string {
 const defaultEndpoint = 'https://sourcify.dev/server/';
 
 export async function submitSourcesToSourcify(
-	hre: HardhatRuntimeEnvironment,
-	config?: {
-		endpoint?: string;
-		contractName?: string;
-		writeFailingMetadata?: boolean;
-	}
+	env: {
+		deployments: UnknownDeployments;
+		networkName: string;
+		chainId: string;
+		deploymentNames?: string[];
+		minInterval?: number;
+		logErrorOnFailure?: boolean;
+	},
+	config?: SourcifyOptions
 ): Promise<void> {
-	config = config || {};
-	const chainId = await hre.getChainId();
-	const all = await hre.deployments.all();
+	config = config || {type: 'sourcify'};
+	const all = env.deployments;
 	const url = config.endpoint ? ensureTrailingSlash(config.endpoint) : defaultEndpoint;
 
 	async function submit(name: string) {
@@ -52,10 +56,11 @@ export async function submitSourcesToSourcify(
 		const {address, metadata: metadataString} = deployment;
 
 		try {
-			const checkResponse = await axios.get(
-				`${url}checkByAddresses?addresses=${address.toLowerCase()}&chainIds=${chainId}`
+			const checkResponse = await fetch(
+				`${url}checkByAddresses?addresses=${address.toLowerCase()}&chainIds=${env.chainId}`
 			);
-			const {data: checkData} = checkResponse;
+			const json = await checkResponse.json();
+			const {data: checkData} = json;
 			if (checkData[0].status === 'perfect') {
 				log(`already verified: ${name} (${address}), skipping.`);
 				return;
@@ -69,29 +74,27 @@ export async function submitSourcesToSourcify(
 			return;
 		}
 
-		logInfo(`verifying ${name} (${address} on chain ${chainId}) ...`);
+		logInfo(`verifying ${name} (${address} on chain ${env.chainId}) ...`);
 
 		const formData = new FormData();
 		formData.append('address', address);
-		formData.append('chain', chainId);
-
-		const fileStream = new Readable();
-		fileStream.push(metadataString);
-		fileStream.push(null);
-		formData.append('files', fileStream, 'metadata.json');
+		formData.append('chain', env.chainId);
+		const metadataBlob = new Blob([metadataString], {
+			type: 'application/json',
+		});
+		formData.append('files', metadataBlob, 'metadata.json');
 
 		try {
-			const submissionResponse = await axios.post(url, formData, {
-				headers: formData.getHeaders(),
-			});
-			if (submissionResponse.data.result[0].status === 'perfect') {
+			const submissionResponse = await fetch(url, {body: formData, method: 'POST'});
+			const json = await submissionResponse.json();
+			if (json.data.result[0].status === 'perfect') {
 				logSuccess(` => contract ${name} is now verified`);
 			} else {
 				logError(` => contract ${name} is not verified`);
 			}
 		} catch (e) {
-			if (config && config.writeFailingMetadata) {
-				const failingMetadataFolder = path.join('failing_metadata', chainId);
+			if (env?.logErrorOnFailure) {
+				const failingMetadataFolder = path.join('failing_metadata', env.chainId);
 				fs.ensureDirSync(failingMetadataFolder);
 				fs.writeFileSync(path.join(failingMetadataFolder, `${name}_at_${address}.json`), metadataString);
 			}
@@ -99,11 +102,10 @@ export async function submitSourcesToSourcify(
 		}
 	}
 
-	if (config.contractName) {
-		await submit(config.contractName);
-	} else {
-		for (const name of Object.keys(all)) {
-			await submit(name);
+	for (const name of env.deploymentNames ? env.deploymentNames : Object.keys(all)) {
+		await submit(name);
+		if (env.minInterval) {
+			await sleep(env.minInterval);
 		}
 	}
 }

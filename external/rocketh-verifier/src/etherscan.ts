@@ -2,10 +2,10 @@
 import fs from 'fs';
 import 'isomorphic-unfetch';
 import qs from 'qs';
-import path from 'path';
-import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import chalk from 'chalk';
 import {matchAll} from './utils/match-all';
+import {Environment, UnknownDeployments} from 'rocketh';
+import {EtherscanOptions} from '.';
 
 function log(...args: any[]) {
 	console.log(...args);
@@ -121,32 +121,26 @@ function getLicenseType(license: string): undefined | number {
 	return licenseType;
 }
 
-export async function submitSources(
-	hre: HardhatRuntimeEnvironment,
-	solcInputsPath: string,
-	config?: {
-		contractName?: string;
-		etherscanApiKey?: string;
-		license?: string;
-		fallbackOnSolcInput?: boolean;
-		forceLicense?: boolean;
-		sleepBetween?: boolean;
-		apiUrl?: string;
-		writePostData?: boolean;
-	}
+export async function submitSourcesToEtherscan(
+	env: {
+		deployments: UnknownDeployments;
+		networkName: string;
+		chainId: string;
+		deploymentNames?: string[];
+		minInterval?: number;
+		logErrorOnFailure?: boolean;
+	},
+	config?: EtherscanOptions
 ): Promise<void> {
-	config = config || {};
-	const fallbackOnSolcInput = config.fallbackOnSolcInput;
+	config = config || {type: 'etherscan'};
 	const licenseOption = config.license;
 	const forceLicense = config.forceLicense;
-	const etherscanApiKey = config.etherscanApiKey;
-	const sleepBetween = config.sleepBetween;
-	const all = await hre.deployments.all();
-	const networkName = hre.network.name;
-	let host = config.apiUrl;
+	const etherscanApiKey = config.apiKey;
+	const all = env.deployments;
+	const networkName = env.networkName;
+	let host = config.endpoint;
 	if (!host) {
-		const chainId = await hre.getChainId();
-		switch (chainId) {
+		switch (env.chainId) {
 			case '1':
 				host = 'https://api.etherscan.io';
 				break;
@@ -230,18 +224,19 @@ export async function submitSources(
 				break;
 			default:
 				return logError(
-					`Network with chainId: ${chainId} not supported. You can specify the url manually via --api-url <url>.`
+					`Network with chainId: ${env.chainId} not supported. You can specify the url manually via --api-url <url>.`
 				);
 		}
 	}
 
-	async function submit(name: string, useSolcInput?: boolean) {
+	async function submit(name: string) {
 		const deployment = all[name];
 		const {address, metadata: metadataString} = deployment;
-		const abiResponse = await axios.get(
+		const abiResponse = await fetch(
 			`${host}/api?module=contract&action=getabi&address=${address}&apikey=${etherscanApiKey}`
 		);
-		const {data: abiData} = abiResponse;
+		const json = await abiResponse.json();
+		const {data: abiData} = json;
 		let contractABI;
 		if (abiData.status !== '0') {
 			try {
@@ -318,32 +313,20 @@ export async function submitSources(
 			settings: any;
 			sources: Record<string, {content: string}>;
 		};
-		if (useSolcInput) {
-			const solcInputHash = deployment.solcInputHash;
-			let solcInputStringFromDeployment: string | undefined;
-			try {
-				solcInputStringFromDeployment = fs.readFileSync(path.join(solcInputsPath, solcInputHash + '.json')).toString();
-			} catch (e) {}
-			if (!solcInputStringFromDeployment) {
-				logError(`Contract ${name} was deployed without saving solcInput. Cannot submit to etherscan, skipping.`);
-				return;
-			}
-			solcInput = JSON.parse(solcInputStringFromDeployment);
-		} else {
-			const settings = {...metadata.settings};
-			delete settings.compilationTarget;
-			solcInput = {
-				language: metadata.language,
-				settings,
-				sources: {},
+
+		const settings = {...metadata.settings};
+		delete settings.compilationTarget;
+		solcInput = {
+			language: metadata.language,
+			settings,
+			sources: {},
+		};
+		for (const sourcePath of Object.keys(metadata.sources)) {
+			const source = metadata.sources[sourcePath];
+			// only content as this fails otherwise
+			solcInput.sources[sourcePath] = {
+				content: source.content,
 			};
-			for (const sourcePath of Object.keys(metadata.sources)) {
-				const source = metadata.sources[sourcePath];
-				// only content as this fails otherwise
-				solcInput.sources[sourcePath] = {
-					content: source.content,
-				};
-			}
 		}
 
 		// Adding Libraries ....
@@ -361,12 +344,9 @@ export async function submitSources(
 
 		logInfo(`verifying ${name} (${address}) ...`);
 
-		let constructorArguements: string | undefined;
-		if (deployment.args) {
-			const constructor: {inputs: ParamType[]} = deployment.abi.find((v) => v.type === 'constructor');
-			if (constructor) {
-				constructorArguements = defaultAbiCoder.encode(constructor.inputs, deployment.args).slice(2);
-			}
+		let constructorArguments: string | undefined;
+		if (deployment.argsData) {
+			constructorArguments = deployment.argsData;
 		} else {
 			logInfo(`no args found, assuming empty constructor...`);
 		}
@@ -382,18 +362,27 @@ export async function submitSources(
 			codeformat: 'solidity-standard-json-input',
 			contractname: contractNamePath,
 			compilerversion: `v${metadata.compiler.version}`, // see http://etherscan.io/solcversions for list of support versions
-			constructorArguements,
+			constructorArguments,
 			licenseType,
 		};
 
 		const formDataAsString = qs.stringify(postData);
-		const submissionResponse = await axios.request({
-			url: `${host}/api`,
+		const data = new URLSearchParams();
+		for (const entry of Object.entries(postData)) {
+			if (entry[1]) {
+				if (typeof entry[1] === 'number') {
+					data.append(entry[0], entry[1].toString());
+				} else {
+				}
+			}
+		}
+		const submissionResponse = await fetch(`${host}/api`, {
 			method: 'POST',
 			headers: {'content-type': 'application/x-www-form-urlencoded'},
-			data: formDataAsString,
+			body: data,
 		});
-		const {data: submissionData} = submissionResponse;
+		const submissionJson = await submissionResponse.json();
+		const {data: submissionData} = submissionJson;
 
 		let guid: string;
 		if (submissionData.status === '1') {
@@ -403,25 +392,22 @@ export async function submitSources(
 				`contract ${name} failed to submit : "${submissionData.message}" : "${submissionData.result}"`,
 				submissionData
 			);
-			writeRequestIfRequested(config?.writePostData || false, networkName, name, formDataAsString, postData);
+			writeRequestIfRequested(env?.logErrorOnFailure || false, networkName, name, formDataAsString, postData);
 			return;
 		}
 		if (!guid) {
 			logError(`contract submission for ${name} failed to return a guid`);
-			writeRequestIfRequested(config?.writePostData || false, networkName, name, formDataAsString, postData);
+			writeRequestIfRequested(env?.logErrorOnFailure || false, networkName, name, formDataAsString, postData);
 			return;
 		}
 
 		async function checkStatus(): Promise<string | undefined> {
 			// TODO while loop and delay :
-			const statusResponse = await axios.get(`${host}/api?apikey=${etherscanApiKey}`, {
-				params: {
-					guid,
-					module: 'contract',
-					action: 'checkverifystatus',
-				},
-			});
-			const {data: statusData} = statusResponse;
+			const statusResponse = await fetch(
+				`${host}/api?apikey=${etherscanApiKey}&guid=${guid}&module=contract&action=checkverifystatus`
+			);
+			const json = await statusResponse.json();
+			const {data: statusData} = json;
 
 			// blockscout seems to return status == 1 in case of failure
 			// so we check string first
@@ -447,7 +433,7 @@ export async function submitSources(
 						codeformat: 'solidity-standard-json-input',
 						contractname: contractNamePath,
 						compilerversion: `v${metadata.compiler.version}`, // see http://etherscan.io/solcversions for list of support versions
-						constructorArguements,
+						constructorArguments,
 						licenseType,
 					},
 					null,
@@ -471,32 +457,17 @@ export async function submitSources(
 		}
 
 		if (result === 'failure') {
-			if (!useSolcInput && fallbackOnSolcInput) {
-				logInfo(
-					'Falling back on solcInput. etherscan seems to sometime require full solc-input with all source files, even though this should not be needed. See https://github.com/ethereum/solidity/issues/9573'
-				);
-				await submit(name, true);
-			} else {
-				writeRequestIfRequested(config?.writePostData || false, networkName, name, formDataAsString, postData);
-				logInfo(
-					'Etherscan sometime fails to verify when only metadata sources are given. See https://github.com/ethereum/solidity/issues/9573. You can add the option --solc-input to try with full solc-input sources. This will include all contract source in the etherscan result, even the one not relevant to the contract being verified'
-				);
-			}
+			writeRequestIfRequested(env?.logErrorOnFailure || false, networkName, name, formDataAsString, postData);
+			logInfo('Etherscan failed to verify the source provided');
 		} else {
-			writeRequestIfRequested(config?.writePostData || false, networkName, name, formDataAsString, postData);
+			writeRequestIfRequested(env?.logErrorOnFailure || false, networkName, name, formDataAsString, postData);
 		}
 	}
 
-	if (config.contractName) {
-		await submit(config.contractName);
-	} else {
-		for (const name of Object.keys(all)) {
-			await submit(name);
-
-			if (sleepBetween) {
-				// sleep between each verification so we don't exceed the API rate limit
-				await sleep(500);
-			}
+	for (const name of env.deploymentNames ? env.deploymentNames : Object.keys(all)) {
+		await submit(name);
+		if (env.minInterval) {
+			await sleep(env.minInterval);
 		}
 	}
 }

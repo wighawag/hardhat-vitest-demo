@@ -1,3 +1,6 @@
+import {readAndResolveConfig} from 'rocketh';
 import {run} from '.';
 
-run();
+const resolvedConfig = readAndResolveConfig({network: 'localhost'});
+
+run(resolvedConfig, {verifier: {type: 'etherscan'}});

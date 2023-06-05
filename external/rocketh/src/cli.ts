@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 import fs from 'node:fs';
-import {loadAndExecuteDeployments} from '.';
+import {loadAndExecuteDeployments, readConfig} from '.';
 import {Command, Option} from 'commander';
 import pkg from '../package.json';
 import figlet from 'figlet';
@@ -29,27 +29,6 @@ program
 	.parse(process.argv);
 
 const options = program.opts();
+const config = readConfig(options as any);
 
-type Networks = {[name: string]: {rpcUrl: string}};
-type ConfigFile = {networks: Networks};
-let configFile: ConfigFile;
-try {
-	const configString = fs.readFileSync('./rocketh.json', 'utf-8');
-	configFile = JSON.parse(configString);
-} catch {
-	console.error(`could not read rocketh.json`);
-	process.exit(1);
-}
-
-const network = configFile.networks && configFile.networks[options.network];
-if (!network) {
-	console.error(`network "${options.network}" is not configured. Please add it to the rocketh.json file`);
-}
-
-loadAndExecuteDeployments({
-	nodeUrl: network.rpcUrl,
-	networkName: options.network,
-	deployments: options.deployments,
-	scripts: options.scripts,
-	tags: options.tags && options.tags.split(','),
-});
+loadAndExecuteDeployments(config);

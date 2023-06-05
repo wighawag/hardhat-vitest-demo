@@ -8,7 +8,7 @@ export function loadDeployments(
 	subPath: string,
 	onlyABIAndAddress?: boolean,
 	expectedChainId?: string
-) {
+): {deployments: UnknownDeployments; chainId?: string} {
 	const deploymentsFound: UnknownDeployments = {};
 	const deployPath = path.join(deploymentsPath, subPath);
 
@@ -17,24 +17,28 @@ export function loadDeployments(
 		filesStats = traverse(deployPath, undefined, undefined, (name) => !name.startsWith('.') && name !== 'solcInputs');
 	} catch (e) {
 		// console.log('no folder at ' + deployPath);
-		return {};
+		return {deployments: {}};
 	}
+	let chainId: string;
 	if (filesStats.length > 0) {
+		const chainIdFilepath = path.join(deployPath, '.chainId');
+		if (fs.existsSync(chainIdFilepath)) {
+			chainId = fs.readFileSync(chainIdFilepath).toString().trim();
+		} else {
+			throw new Error(
+				`with hardhat-deploy >= 0.6 you are expected to create a '.chainId' file in the deployment folder`
+			);
+		}
+
 		if (expectedChainId) {
-			const chainIdFilepath = path.join(deployPath, '.chainId');
-			if (fs.existsSync(chainIdFilepath)) {
-				const chainIdFound = fs.readFileSync(chainIdFilepath).toString().trim();
-				if (expectedChainId !== chainIdFound) {
-					throw new Error(
-						`Loading deployment in folder '${deployPath}' (with chainId: ${chainIdFound}) for a different chainId (${expectedChainId})`
-					);
-				}
-			} else {
+			if (expectedChainId !== chainId) {
 				throw new Error(
-					`with hardhat-deploy >= 0.6 you are expected to create a '.chainId' file in the deployment folder`
+					`Loading deployment in folder '${deployPath}' (with chainId: ${chainId}) for a different chainId (${expectedChainId})`
 				);
 			}
 		}
+	} else {
+		return {deployments: {}};
 	}
 	let fileNames = filesStats.map((a) => a.relativePath);
 	fileNames = fileNames.sort((a, b) => {
@@ -73,5 +77,5 @@ export function loadDeployments(
 			deploymentsFound[name] = deployment;
 		}
 	}
-	return deploymentsFound;
+	return {deployments: deploymentsFound, chainId};
 }

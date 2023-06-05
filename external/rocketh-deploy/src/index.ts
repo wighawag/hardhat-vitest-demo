@@ -1,8 +1,15 @@
 import {Abi} from 'abitype';
-import type {Artifact, DeploymentConstruction, Deployment, Environment, PendingDeployment} from 'rocketh';
+import type {
+	Artifact,
+	DeploymentConstruction,
+	Deployment,
+	Environment,
+	PendingDeployment,
+	PartialDeployment,
+} from 'rocketh';
 import {extendEnvironment} from 'rocketh';
 import {Chain, createPublicClient, createWalletClient, custom, getAccount} from 'viem';
-import {DeployContractParameters, deployContract} from 'viem/contract';
+import {DeployContractParameters, deployContract, encodeDeployData} from 'viem/contract';
 
 declare module 'rocketh' {
 	interface Environment {
@@ -49,10 +56,11 @@ extendEnvironment((env: Environment) => {
 		}
 		const viemAccount = getAccount(address);
 
-		const partialDeployment = (typeof artifact === 'string' ? env.artifacts[artifact] : artifact) as Artifact<TAbi>;
+		// TODO throw specific error if artifact not found
+		const artifactToUse = (typeof artifact === 'string' ? env.artifacts[artifact] : artifact) as Artifact<TAbi>;
 
-		const bytecode = partialDeployment.bytecode;
-		const abi = partialDeployment.abi;
+		const bytecode = artifactToUse.bytecode;
+		const abi = artifactToUse.abi;
 
 		const argsToUse: DeployContractParameters<TChain, TAbi> = {
 			...viemArgs,
@@ -61,7 +69,20 @@ extendEnvironment((env: Environment) => {
 			bytecode,
 		} as unknown as DeployContractParameters<TChain, TAbi>; // TODO why casting necessary here
 
-		const txHash = await deployContract<TChain, TAbi>(walletClient, argsToUse);
+		const calldata = encodeDeployData(argsToUse);
+		const argsData = `0x${calldata.replace(bytecode, '')}` as `0x${string}`;
+
+		// const txHash = await deployContract<TChain, TAbi>(walletClient, argsToUse);
+		const txHash = await walletClient.sendTransaction({
+			...(viemArgs as any),
+			account: viemAccount,
+			data: calldata,
+		});
+
+		const partialDeployment: PartialDeployment<TAbi> = {
+			...artifactToUse,
+			argsData,
+		};
 		const pendingDeployment: PendingDeployment<TAbi> = {...args, partialDeployment, txHash};
 		return env.saveWhilePending(name, pendingDeployment);
 	}

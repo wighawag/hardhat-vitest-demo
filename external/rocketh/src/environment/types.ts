@@ -2,34 +2,37 @@ import {EIP1193Account, EIP1193DATA, EIP1193ProviderWithoutEvents} from 'eip-119
 import {Abi, Narrow} from 'abitype';
 import type {DeployContractParameters} from 'viem/contract';
 import type {Chain} from 'viem';
-import {ResolvedConfig} from '../internal/types';
+
+export type Libraries = {[libraryName: string]: EIP1193Account};
 
 export type Deployment<TAbi extends Abi> = {
 	address: EIP1193Account;
 	abi: Narrow<TAbi>;
 	txHash: EIP1193DATA;
 	bytecode: EIP1193DATA;
-	deployedBytecode: EIP1193DATA;
-	linkReferences: any;
-	deployedLinkReferences: any;
-	devdoc: any; // TODO type
-	evm: any; // TODO type
+	argsData: EIP1193DATA;
 	metadata: string;
-	storageLayout: any; // TODO type
-	userdoc: any; // TODO type
+	libraries?: Libraries;
+	deployedBytecode?: EIP1193DATA;
+	linkReferences?: any;
+	deployedLinkReferences?: any;
+	devdoc?: any; // TODO type
+	evm?: any; // TODO type
+	storageLayout?: any; // TODO type
+	userdoc?: any; // TODO type
 };
 
 export type Artifact<TAbi extends Abi = Abi> = {
 	abi: TAbi;
 	bytecode: EIP1193DATA;
-	deployedBytecode: EIP1193DATA;
-	linkReferences: any;
-	deployedLinkReferences: any;
-	devdoc: any; // TODO type
-	evm: any; // TODO type
 	metadata: string;
-	storageLayout: any; // TODO type
-	userdoc: any; // TODO type
+	deployedBytecode?: EIP1193DATA;
+	linkReferences?: any;
+	deployedLinkReferences?: any;
+	devdoc?: any; // TODO type
+	evm?: any; // TODO type
+	storageLayout?: any; // TODO type
+	userdoc?: any; // TODO type
 };
 
 export type UnknownDeployments = Record<string, Deployment<Abi>>;
@@ -72,6 +75,8 @@ type ConfigForEIP1193Provider = BaseConfig & {
 
 export type Config = ConfigForJSONRPC | ConfigForEIP1193Provider;
 
+export type ResolvedConfig = Config & {deployments: string; scripts: string; tags: string[]; networkName: string};
+
 export interface Environment<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
 	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
@@ -79,6 +84,7 @@ export interface Environment<
 > {
 	config: ResolvedConfig;
 	network: {
+		chainId: string;
 		name: string;
 		tags: {[tag: string]: boolean};
 		provider: EIP1193ProviderWithoutEvents;
@@ -97,9 +103,14 @@ export interface Environment<
 export type DeploymentConstruction<TAbi extends Abi, TChain extends Chain = Chain> = Omit<
 	DeployContractParameters<TChain, TAbi>,
 	'bytecode' | 'account' | 'abi'
-> & {account: string | EIP1193Account; artifact: string | Artifact<TAbi>; abi?: TAbi};
+> & {account: string | EIP1193Account; artifact: string | Artifact<TAbi>};
+
+export type PartialDeployment<TAbi extends Abi = Abi> = Artifact<TAbi> & {
+	argsData: EIP1193DATA;
+	libraries?: Libraries;
+};
 
 export type PendingDeployment<TAbi extends Abi = Abi> = DeploymentConstruction<TAbi> & {
 	txHash: `0x${string}`;
-	partialDeployment: Artifact<TAbi>;
+	partialDeployment: PartialDeployment<TAbi>;
 };

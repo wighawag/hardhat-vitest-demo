@@ -1,11 +1,4 @@
-import type {
-	Artifact,
-	Context,
-	Environment,
-	UnknownArtifacts,
-	UnknownDeployments,
-	UnknownNamedAccounts,
-} from '../environment/types';
+import type {Environment, UnknownArtifacts, UnknownDeployments, UnknownNamedAccounts} from '../environment/types';
 
 export type DeployScriptFunction<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
