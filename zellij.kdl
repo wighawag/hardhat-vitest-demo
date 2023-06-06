@@ -1,16 +1,15 @@
 layout {
 	pane {
-		pane {}
+		pane name="shell" command="bash" {
+			args "-c" "${SHELL-bash}"
+		}
 		pane split_direction="vertical" {
-			pane command="bash"  {
-				args "-c" "anvil -b 5; ${SHELL-bash}"
+			pane name="vitest" command="pnpm" {
+				args "test"
 			}
-			pane {
-				pane command="bash"  {
-					args "-c" "pnpm run -r dev"
-				}
+			pane name="local node" command="pnpm"  {
+				args "local_node"
 			}
 		}
 	}
-
 }
