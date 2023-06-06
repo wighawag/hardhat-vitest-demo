@@ -51,7 +51,7 @@ export type AccountType =
 
 export type ResolvedAccount = {
 	address: EIP1193Account;
-	signer?: EIP1193SignerProvider;
+	signer: EIP1193SignerProvider;
 };
 
 export type UnknownDeployments = Record<string, Deployment<Abi>>;
@@ -65,10 +65,7 @@ export type UnresolvedUnknownNamedAccounts = {
 };
 
 export type ResolvedNamedAccounts<T extends UnresolvedUnknownNamedAccounts> = {
-	[Property in keyof T]: {
-		address: EIP1193Account;
-		signer?: EIP1193SignerProvider;
-	};
+	[Property in keyof T]: ResolvedAccount;
 };
 
 export type UnknownDeploymentsAcrossNetworks = Record<string, UnknownDeployments>;

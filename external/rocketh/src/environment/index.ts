@@ -113,6 +113,7 @@ export async function createEnvironment<
 				} else {
 					accountCache[name] = account = {
 						address: accountDef as `0x${string}`,
+						signer: provider,
 					};
 				}
 			} else {

@@ -8,12 +8,10 @@ import type {
 	ResolvedNamedAccounts,
 	UnknownArtifacts,
 	UnknownDeployments,
-	AccountType,
 	UnresolvedUnknownNamedAccounts,
 } from '../environment/types';
 import {createEnvironment} from '../environment';
 import {DeployScriptFunction, DeployScriptModule, ProvidedContext} from './types';
-import {EIP1193SignerProvider} from 'eip-1193';
 
 require('esbuild-register/dist/node').register();
 
