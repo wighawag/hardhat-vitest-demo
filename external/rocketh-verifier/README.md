@@ -1,1 +1,1 @@
-# rocketh
+# rocketh-verifier
