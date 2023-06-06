@@ -16,4 +16,8 @@ module.exports = {
 	paths: {
 		sources: 'src',
 	},
+	generateArtifacts: {
+		js: 'generated/artifacts.js',
+		ts: 'generated/artifacts.d.ts',
+	},
 };

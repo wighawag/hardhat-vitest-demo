@@ -11,8 +11,8 @@ importers:
         specifier: ^2.14.1
         version: 2.14.1(typescript@5.1.3)
       hardhat-rocketh:
-        specifier: ^0.5.2
-        version: 0.5.2(rocketh@0.5.2)
+        specifier: ^0.5.6
+        version: 0.5.6(rocketh@0.5.2)
       ldenv:
         specifier: ^0.3.5
         version: 0.3.5
@@ -49,6 +49,9 @@ importers:
       hardhat:
         specifier: ^2.14.1
         version: 2.14.1(typescript@5.1.3)
+      hardhat-rocketh:
+        specifier: ^0.5.6
+        version: 0.5.6(rocketh@0.5.2)
       ldenv:
         specifier: ^0.3.5
         version: 0.3.5
@@ -2173,8 +2176,8 @@ packages:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
     dev: true
 
-  /hardhat-rocketh@0.5.2(rocketh@0.5.2):
-    resolution: {integrity: sha512-e2UDpP/DASz6FzjqTI7XYd75CNL6SzP1Vdai9o3FDchvAmNixbHSPRWhEFNS6oo9xBmTq7+Tyu6f+NsIBE7nOw==}
+  /hardhat-rocketh@0.5.6(rocketh@0.5.2):
+    resolution: {integrity: sha512-R95Kk9XyGjCLNRLJb5LD88sRN4i5Xm13jQrUcQvqWtEOVBL87R8Fv1vEw2CnGoBTCyTGURaj5tRcrp1mRp1GYw==}
     hasBin: true
     peerDependencies:
       rocketh: 0.5.2
