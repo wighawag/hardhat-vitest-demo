@@ -60,8 +60,7 @@ export async function submitSourcesToSourcify(
 				`${url}checkByAddresses?addresses=${address.toLowerCase()}&chainIds=${env.chainId}`
 			);
 			const json = await checkResponse.json();
-			const {data: checkData} = json;
-			if (checkData[0].status === 'perfect') {
+			if (json[0].status === 'perfect') {
 				log(`already verified: ${name} (${address}), skipping.`);
 				return;
 			}
@@ -87,7 +86,7 @@ export async function submitSourcesToSourcify(
 		try {
 			const submissionResponse = await fetch(url, {body: formData, method: 'POST'});
 			const json = await submissionResponse.json();
-			if (json.data.result[0].status === 'perfect') {
+			if (json.result[0].status === 'perfect') {
 				logSuccess(` => contract ${name} is now verified`);
 			} else {
 				logError(` => contract ${name} is not verified`);
