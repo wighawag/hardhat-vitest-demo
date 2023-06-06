@@ -1,23 +1,24 @@
 {
   "name": "template-hardhat",
   "version": "0.0.0",
+  "private": true,
   "description": "",
   "type": "module",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
     "hardhat": "^2.14.1",
-    "hardhat-rocketh": "workspace:*",
+    "hardhat-rocketh": "^0.5.1",
     "ldenv": "^0.3.5",
-    "rocketh": "workspace:*",
-    "rocketh-deploy": "workspace:*",
-    "rocketh-signer": "workspace:*",
-    "rocketh-verifier": "workspace:*",
+    "rocketh": "^0.5.1",
+    "rocketh-deploy": "^0.5.1",
+    "rocketh-signer": "^0.5.1",
+    "rocketh-verifier": "^0.5.1",
     "set-defaults": "^0.0.1",
     "viem": "^0.3.50",
     "vitest": "^0.31.4"
   },
   "scripts": {
-    "prepare": "set-defaults .vscode",
+    "prepare": "set-defaults .vscode && pnpm compile",
     "compile": "hardhat compile",
     "test": "vitest",
     "start": "zellij --layout zellij.kdl a $npm_package_name || zellij --layout zellij.kdl -s $npm_package_name"
