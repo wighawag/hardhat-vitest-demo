@@ -5,25 +5,29 @@ import type {
 	Config,
 	Environment,
 	ResolvedConfig,
+	ResolvedNamedAccounts,
 	UnknownArtifacts,
 	UnknownDeployments,
-	UnknownNamedAccounts,
+	AccountType,
+	UnresolvedUnknownNamedAccounts,
 } from '../environment/types';
 import {createEnvironment} from '../environment';
 import {DeployScriptFunction, DeployScriptModule, ProvidedContext} from './types';
+import {EIP1193SignerProvider} from 'eip-1193';
 
 require('esbuild-register/dist/node').register();
 
 export function execute<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
-	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
+	NamedAccounts extends UnresolvedUnknownNamedAccounts = UnresolvedUnknownNamedAccounts,
 	Deployments extends UnknownDeployments = UnknownDeployments
 >(
 	context: ProvidedContext<Artifacts, NamedAccounts>,
-	callback: DeployScriptFunction<Artifacts, NamedAccounts, Deployments>,
+	callback: DeployScriptFunction<Artifacts, ResolvedNamedAccounts<NamedAccounts>, Deployments>,
 	options: {tags?: string[]; dependencies?: string[]}
 ): DeployScriptModule<Artifacts, NamedAccounts, Deployments> {
-	const scriptModule = (env: Environment<Artifacts, NamedAccounts, Deployments>) => callback(env);
+	const scriptModule = (env: Environment<Artifacts, ResolvedNamedAccounts<NamedAccounts>, Deployments>) =>
+		callback(env);
 	scriptModule.providedContext = context;
 	scriptModule.tags = options.tags;
 	scriptModule.dependencies = options.dependencies;
@@ -95,7 +99,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
 
 export async function loadAndExecuteDeployments<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
-	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
+	NamedAccounts extends UnresolvedUnknownNamedAccounts = UnresolvedUnknownNamedAccounts,
 	Deployments extends UnknownDeployments = UnknownDeployments
 >(config: Config) {
 	const resolvedConfig = resolveConfig(config);
@@ -108,7 +112,7 @@ export async function loadAndExecuteDeployments<
 
 export async function executeDeployScripts<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
-	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
+	NamedAccounts extends UnresolvedUnknownNamedAccounts = UnresolvedUnknownNamedAccounts,
 	Deployments extends UnknownDeployments = UnknownDeployments
 >(config: ResolvedConfig): Promise<Deployments> {
 	let filepaths;
@@ -197,34 +201,7 @@ export async function executeDeployScripts<
 		throw new Error(`no context loaded`);
 	}
 
-	let networkName: string;
-	let saveDeployments: boolean;
-	let tags: {[tag: string]: boolean} = {};
-	if ('nodeUrl' in config) {
-		networkName = config.networkName;
-		saveDeployments = true;
-	} else {
-		if (config.networkName) {
-			networkName = config.networkName;
-		} else {
-			networkName = 'memory';
-		}
-		if (networkName === 'memory' || networkName === 'hardhat') {
-			tags['memory'] = true;
-			saveDeployments = false;
-		} else {
-			saveDeployments = true;
-		}
-	}
-	const {internal, external} = await createEnvironment(config, {
-		accounts: providedContext.accounts || {},
-		artifacts: providedContext.artifacts,
-		network: {
-			name: networkName,
-			saveDeployments,
-			tags,
-		},
-	});
+	const {internal, external} = await createEnvironment(config, providedContext);
 
 	await internal.recoverTransactionsIfAny();
 

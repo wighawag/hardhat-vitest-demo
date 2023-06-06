@@ -7,6 +7,8 @@ import {
 	EIP1193SignerProvider,
 	EIP1193ProviderWithoutEvents,
 	EIP1193GenericRequest,
+	EIP1193AccountsRequest,
+	EIP1193Accounts,
 } from 'eip-1193';
 import {privateKeyToAccount, mnemonicToAccount, LocalAccount} from 'viem/accounts';
 
@@ -29,28 +31,32 @@ function tonf(v: `0x${string}`): number {
 }
 
 export class EIP1193LocalSigner implements EIP1193SignerProvider {
-	private accounts: {[address: string]: LocalAccount<'hd' | 'privateKey'>} = {};
+	private accounts: {[address: `0x${string}`]: LocalAccount<'hd' | 'privateKey'>} = {};
+	public readonly addresses: `0x${string}`[] = [];
 
 	constructor(prv: `0x${string}` | {mnemonic: string; num: number}) {
 		if (typeof prv === 'string') {
 			const account = privateKeyToAccount(prv);
-			this.accounts[account.address.toLowerCase()] = account;
+			this.accounts[account.address.toLowerCase() as `0x${string}`] = account;
+			this.addresses.push(account.address);
 		} else {
 			for (let i = 0; i < (isNaN(prv.num) ? 1 : Math.max(prv.num, 1)); i++) {
 				const account = mnemonicToAccount(prv.mnemonic, {accountIndex: i});
-				this.accounts[account.address.toLowerCase()] = account;
+				this.accounts[account.address.toLowerCase() as `0x${string}`] = account;
+				this.addresses.push(account.address);
 			}
 		}
 	}
 
+	request(args: EIP1193AccountsRequest): Promise<EIP1193Accounts>;
 	request(args: EIP1193LegacySignRequest): Promise<`0x${string}`>;
 	request(args: EIP1193SignTransactionRequest): Promise<`0x${string}`>;
 	request(args: EIP1193PersonalSignRequest): Promise<`0x${string}`>;
 	request(args: EIP1193PTypedSignv4Request): Promise<`0x${string}`>;
 	request(args: EIP1193PTypedSignRequest): Promise<`0x${string}`>;
-	async request(args: SignatureRequest): Promise<`0x${string}`> {
+	async request(args: SignatureRequest | EIP1193AccountsRequest): Promise<`0x${string}` | EIP1193Accounts> {
 		const getAccount = (address: `0x${string}`) => {
-			const account = this.accounts[address.toLowerCase()];
+			const account = this.accounts[address.toLowerCase() as `0x${string}`];
 			if (!account) {
 				const addresses = Object.keys(this.accounts);
 				if (addresses.length === 1) {
@@ -61,8 +67,13 @@ export class EIP1193LocalSigner implements EIP1193SignerProvider {
 			}
 			return account;
 		};
+
+		if (args.method === 'eth_accounts') {
+			return this.addresses;
+		}
+
 		// TODO test
-		if (args.method === 'eth_sign') {
+		else if (args.method === 'eth_sign') {
 			const [address, message] = args.params;
 			const account = getAccount(address);
 			return account.signMessage({message: {raw: message}});

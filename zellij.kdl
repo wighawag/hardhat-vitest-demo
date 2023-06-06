@@ -1,0 +1,16 @@
+layout {
+	pane {
+		pane {}
+		pane split_direction="vertical" {
+			pane command="bash"  {
+				args "-c" "anvil -b 5; ${SHELL-bash}"
+			}
+			pane {
+				pane command="bash"  {
+					args "-c" "pnpm run -r dev"
+				}
+			}
+		}
+	}
+
+}

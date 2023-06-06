@@ -1,4 +1,10 @@
-import {EIP1193Account, EIP1193DATA, EIP1193ProviderWithoutEvents, EIP1193TransactionEIP1193DATA} from 'eip-1193';
+import {
+	EIP1193Account,
+	EIP1193DATA,
+	EIP1193ProviderWithoutEvents,
+	EIP1193SignerProvider,
+	EIP1193TransactionEIP1193DATA,
+} from 'eip-1193';
 import {Abi, Narrow} from 'abitype';
 import type {DeployContractParameters} from 'viem/contract';
 import type {Chain} from 'viem';
@@ -35,10 +41,34 @@ export type Artifact<TAbi extends Abi = Abi> = {
 	userdoc?: any; // TODO type
 };
 
+export type AccountDefinition = EIP1193Account | string | number;
+
+export type AccountType =
+	| AccountDefinition
+	| {
+			[networkOrChainId: string | number]: AccountDefinition;
+	  };
+
+export type ResolvedAccount = {
+	address: EIP1193Account;
+	signer?: EIP1193SignerProvider;
+};
+
 export type UnknownDeployments = Record<string, Deployment<Abi>>;
 export type UnknownArtifacts = {[name: string]: Artifact};
 export type UnknownNamedAccounts = {
-	[name: string]: EIP1193Account;
+	[name: string]: ResolvedAccount;
+};
+
+export type UnresolvedUnknownNamedAccounts = {
+	[name: string]: AccountType;
+};
+
+export type ResolvedNamedAccounts<T extends UnresolvedUnknownNamedAccounts> = {
+	[Property in keyof T]: {
+		address: EIP1193Account;
+		signer?: EIP1193SignerProvider;
+	};
 };
 
 export type UnknownDeploymentsAcrossNetworks = Record<string, UnknownDeployments>;

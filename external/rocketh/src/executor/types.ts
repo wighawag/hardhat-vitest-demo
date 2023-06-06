@@ -1,4 +1,11 @@
-import type {Environment, UnknownArtifacts, UnknownDeployments, UnknownNamedAccounts} from '../environment/types';
+import type {
+	Environment,
+	ResolvedNamedAccounts,
+	UnknownArtifacts,
+	UnknownDeployments,
+	UnknownNamedAccounts,
+	UnresolvedUnknownNamedAccounts,
+} from '../environment/types';
 
 export type DeployScriptFunction<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
@@ -8,12 +15,12 @@ export type DeployScriptFunction<
 
 export interface DeployScriptModule<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
-	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
+	NamedAccounts extends UnresolvedUnknownNamedAccounts = UnresolvedUnknownNamedAccounts,
 	Deployments extends UnknownDeployments = UnknownDeployments
 > {
-	(env: Environment<Artifacts, NamedAccounts, Deployments>): Promise<void | boolean>;
+	(env: Environment<Artifacts, ResolvedNamedAccounts<NamedAccounts>, Deployments>): Promise<void | boolean>;
 	providedContext: ProvidedContext<Artifacts, NamedAccounts>;
-	skip?: (env: Environment<Artifacts, NamedAccounts, Deployments>) => Promise<boolean>;
+	skip?: (env: Environment<Artifacts, ResolvedNamedAccounts<NamedAccounts>, Deployments>) => Promise<boolean>;
 	tags?: string[];
 	dependencies?: string[];
 	runAtTheEnd?: boolean;
@@ -22,7 +29,7 @@ export interface DeployScriptModule<
 
 export type ProvidedContext<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
-	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts
+	NamedAccounts extends UnresolvedUnknownNamedAccounts = UnresolvedUnknownNamedAccounts
 > = {
 	accounts?: NamedAccounts;
 	artifacts: Artifacts;
