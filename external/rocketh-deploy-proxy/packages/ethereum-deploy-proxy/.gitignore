@@ -1,0 +1,9 @@
+node_modules
+cache
+artifacts
+.vscode/*
+!*.default
+generated
+deployments/localhost
+
+*.local

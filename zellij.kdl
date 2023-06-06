@@ -4,7 +4,7 @@ layout {
 			args "-c" "${SHELL-bash}"
 		}
 		pane split_direction="vertical" {
-			pane name="vitest" command="pnpm" {
+			pane name="live test" command="pnpm" {
 				args "test"
 			}
 			pane name="local node" command="pnpm"  {

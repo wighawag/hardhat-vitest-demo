@@ -1,0 +1,32 @@
+{
+	"name": "rocketh-deploy-proxy",
+	"version": "0.5.2",
+	"description": "provide proxy-enabled deploy function for rocketh",
+	"publishConfig": {
+		"access": "public"
+	},
+	"type": "module",
+	"main": "dist/index.cjs",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"devDependencies": {
+		"abitype": "^0.7.1",
+		"eip-1193": "^0.4.4",
+		"rimraf": "^4.4.1",
+		"rocketh": "^0.5.2",
+		"tsup": "^6.7.0",
+		"typescript": "^5.0.4"
+	},
+	"peerDependencies": {
+		"rocketh": "^0.5.2"
+	},
+	"dependencies": {
+		"ethereum-deploy-proxy": "workspace:*",
+		"rocketh-deploy": "^0.5.2",
+		"viem": "^0.3.50"
+	},
+	"scripts": {
+		"build": "rimraf dist && tsup src/index.ts --dts --format esm,cjs",
+		"dev": "rimraf dist && tsup src/index.ts --dts --format esm,cjs --watch"
+	}
+}

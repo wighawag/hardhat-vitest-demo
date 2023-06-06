@@ -1,0 +1,23 @@
+{
+  "name": "ethereum-deploy-proxy",
+  "version": "0.0.0",
+  "description": "Proxy contract for deployment",
+  "publishConfig": {
+		"access": "public"
+	},
+  "type": "module",
+  "files": [
+    "artifacts",
+    "generated"
+  ],
+  "devDependencies": {
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "hardhat": "^2.14.1",
+    "ldenv": "^0.3.5",
+    "set-defaults": "^0.0.1"
+  },
+  "scripts": {
+    "prepare": "set-defaults .vscode && pnpm compile",
+    "compile": "hardhat compile"
+  }
+}
