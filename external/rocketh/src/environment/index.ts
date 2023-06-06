@@ -318,6 +318,17 @@ export async function createEnvironment<
 		}
 		const {abi, ...artifactObjectWithoutABI} = pendingDeployment.partialDeployment;
 
+		if (!artifactObjectWithoutABI.nonce) {
+			const transaction = await provider.request({
+				method: 'eth_getTransactionByHash',
+				params: [pendingDeployment.txHash],
+			});
+			if (transaction) {
+				artifactObjectWithoutABI.nonce = transaction.nonce;
+				artifactObjectWithoutABI.txOrigin = transaction.from;
+			}
+		}
+
 		// TODO options
 		for (const key of Object.keys(artifactObjectWithoutABI)) {
 			if (key.startsWith('_')) {
@@ -342,7 +353,21 @@ export async function createEnvironment<
 
 	async function saveWhilePending<TAbi extends Abi = Abi>(name: string, pendingDeployment: PendingDeployment<TAbi>) {
 		await saveTransaction<TAbi>(name, pendingDeployment);
-		const deployment = waitForTransactionAndSave<TAbi>(name, pendingDeployment);
+		const transaction = await provider.request({
+			method: 'eth_getTransactionByHash',
+			params: [pendingDeployment.txHash],
+		});
+
+		const deployment = waitForTransactionAndSave<TAbi>(
+			name,
+			transaction
+				? {
+						...pendingDeployment,
+						nonce: transaction.nonce,
+						txOrigin: transaction.from,
+				  }
+				: pendingDeployment
+		);
 		await deleteTransaction(pendingDeployment.txHash);
 		return deployment;
 	}

@@ -16,6 +16,8 @@ export type Deployment<TAbi extends Abi> = {
 	address: EIP1193Account;
 	abi: Narrow<TAbi>;
 	txHash: EIP1193DATA;
+	txOrigin?: EIP1193Account;
+	nonce?: EIP1193DATA;
 	bytecode: EIP1193DATA;
 	argsData: EIP1193DATA;
 	metadata: string;
@@ -144,6 +146,8 @@ export type DeploymentConstruction<TAbi extends Abi, TChain extends Chain = Chai
 > & {account: string | EIP1193Account; artifact: string | Artifact<TAbi>};
 
 export type PartialDeployment<TAbi extends Abi = Abi> = Artifact<TAbi> & {
+	txOrigin?: EIP1193Account;
+	nonce?: EIP1193DATA;
 	argsData: EIP1193DATA;
 	libraries?: Libraries;
 };

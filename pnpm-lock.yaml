@@ -22,6 +22,9 @@ importers:
       rocketh-deploy:
         specifier: workspace:*
         version: link:external/rocketh-deploy
+      rocketh-signer:
+        specifier: workspace:*
+        version: link:external/rocketh-signer
       rocketh-verifier:
         specifier: workspace:*
         version: link:external/rocketh-verifier
@@ -136,6 +139,27 @@ importers:
       eip-1193:
         specifier: ^0.4.4
         version: 0.4.4
+      rimraf:
+        specifier: ^4.4.1
+        version: 4.4.1
+      rocketh:
+        specifier: workspace:*
+        version: link:../rocketh
+      tsup:
+        specifier: ^6.7.0
+        version: 6.7.0(typescript@5.1.3)
+      typescript:
+        specifier: ^5.0.4
+        version: 5.1.3
+
+  external/rocketh-signer:
+    devDependencies:
+      eip-1193:
+        specifier: ^0.4.4
+        version: 0.4.4
+      eip-1193-signer:
+        specifier: workspace:*
+        version: link:../eip-1193-signer
       rimraf:
         specifier: ^4.4.1
         version: 4.4.1

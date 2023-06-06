@@ -10,6 +10,7 @@
     "ldenv": "^0.3.5",
     "rocketh": "workspace:*",
     "rocketh-deploy": "workspace:*",
+    "rocketh-signer": "workspace:*",
     "rocketh-verifier": "workspace:*",
     "set-defaults": "^0.0.1",
     "viem": "^0.3.50",
