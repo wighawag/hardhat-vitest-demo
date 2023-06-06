@@ -4,6 +4,7 @@ import {
 	EIP1193ProviderWithoutEvents,
 	EIP1193SignerProvider,
 	EIP1193TransactionEIP1193DATA,
+	EIP1193WalletProvider,
 } from 'eip-1193';
 import {Abi, Narrow} from 'abitype';
 import type {DeployContractParameters} from 'viem/contract';
@@ -51,13 +52,12 @@ export type AccountType =
 
 export type ResolvedAccount = {
 	address: EIP1193Account;
-	signer: EIP1193SignerProvider;
-};
+} & NamedSigner;
 
 export type UnknownDeployments = Record<string, Deployment<Abi>>;
 export type UnknownArtifacts = {[name: string]: Artifact};
 export type UnknownNamedAccounts = {
-	[name: string]: ResolvedAccount;
+	[name: string]: EIP1193Account;
 };
 
 export type UnresolvedUnknownNamedAccounts = {
@@ -65,7 +65,16 @@ export type UnresolvedUnknownNamedAccounts = {
 };
 
 export type ResolvedNamedAccounts<T extends UnresolvedUnknownNamedAccounts> = {
-	[Property in keyof T]: ResolvedAccount;
+	[Property in keyof T]: EIP1193Account;
+};
+
+export type NamedSigner =
+	| {type: 'signerOnly'; signer: EIP1193SignerProvider}
+	| {type: 'remote'; signer: EIP1193ProviderWithoutEvents}
+	| {type: 'wallet'; signer: EIP1193WalletProvider};
+
+export type ResolvedNamedSigners<T extends UnknownNamedAccounts> = {
+	[Property in keyof T]: NamedSigner;
 };
 
 export type UnknownDeploymentsAcrossNetworks = Record<string, UnknownDeployments>;
@@ -106,7 +115,7 @@ export type ResolvedConfig = Config & {deployments: string; scripts: string; tag
 
 export interface Environment<
 	Artifacts extends UnknownArtifacts = UnknownArtifacts,
-	NamedAccounts extends UnknownNamedAccounts = UnknownNamedAccounts,
+	NamedAccounts extends UnresolvedUnknownNamedAccounts = UnresolvedUnknownNamedAccounts,
 	Deployments extends UnknownDeployments = UnknownDeployments
 > {
 	config: ResolvedConfig;
@@ -117,7 +126,9 @@ export interface Environment<
 		provider: EIP1193ProviderWithoutEvents;
 	};
 	deployments: Deployments;
-	accounts: NamedAccounts;
+	accounts: ResolvedNamedAccounts<NamedAccounts>;
+	signers: ResolvedNamedSigners<ResolvedNamedAccounts<NamedAccounts>>;
+	addressSigners: {[name: `0x${string}`]: NamedSigner};
 	artifacts: Artifacts;
 	save<TAbi extends Abi = Abi>(name: string, deployment: Deployment<TAbi>): Promise<Deployment<TAbi>>;
 	saveWhilePending<TAbi extends Abi = Abi>(

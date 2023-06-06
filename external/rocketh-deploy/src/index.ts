@@ -67,24 +67,53 @@ extendEnvironment((env: Environment) => {
 		const calldata = encodeDeployData(argsToUse);
 		const argsData = `0x${calldata.replace(bytecode, '')}` as `0x${string}`;
 
-		const txHash = await env.network.provider.request({
-			method: 'eth_sendTransaction',
-			params: [
-				{
-					type: '0x2',
-					from: address,
-					chainId: `0x${parseInt(env.network.chainId).toString(16)}` as `0x${string}`,
-					data: calldata,
-					gas: viemArgs.gas && (`0x${viemArgs.gas.toString(16)}` as `0x${string}`),
-					// gasPrice: viemArgs.gasPrice && `0x${viemArgs.gasPrice.toString(16)}` as `0x${string}`,
-					maxFeePerGas: viemArgs.maxFeePerGas && (`0x${viemArgs.maxFeePerGas.toString(16)}` as `0x${string}`),
-					maxPriorityFeePerGas:
-						viemArgs.maxPriorityFeePerGas && (`0x${viemArgs.maxPriorityFeePerGas.toString(16)}` as `0x${string}`),
-					// value: `0x${viemArgs.value?.toString(16)}` as `0x${string}`,
-					nonce: viemArgs.nonce && (`0x${viemArgs.nonce.toString(16)}` as `0x${string}`),
-				},
-			],
-		});
+		const signer = env.addressSigners[address];
+
+		let txHash: `0x${string}`;
+		if (signer.type === 'wallet' || signer.type === 'remote') {
+			txHash = await signer.signer.request({
+				method: 'eth_sendTransaction',
+				params: [
+					{
+						type: '0x2',
+						from: address,
+						chainId: `0x${parseInt(env.network.chainId).toString(16)}` as `0x${string}`,
+						data: calldata,
+						gas: viemArgs.gas && (`0x${viemArgs.gas.toString(16)}` as `0x${string}`),
+						// gasPrice: viemArgs.gasPrice && `0x${viemArgs.gasPrice.toString(16)}` as `0x${string}`,
+						maxFeePerGas: viemArgs.maxFeePerGas && (`0x${viemArgs.maxFeePerGas.toString(16)}` as `0x${string}`),
+						maxPriorityFeePerGas:
+							viemArgs.maxPriorityFeePerGas && (`0x${viemArgs.maxPriorityFeePerGas.toString(16)}` as `0x${string}`),
+						// value: `0x${viemArgs.value?.toString(16)}` as `0x${string}`,
+						nonce: viemArgs.nonce && (`0x${viemArgs.nonce.toString(16)}` as `0x${string}`),
+					},
+				],
+			});
+		} else {
+			const rawTx = await signer.signer.request({
+				method: 'eth_signTransaction',
+				params: [
+					{
+						type: '0x2',
+						from: address,
+						chainId: `0x${parseInt(env.network.chainId).toString(16)}` as `0x${string}`,
+						data: calldata,
+						gas: viemArgs.gas && (`0x${viemArgs.gas.toString(16)}` as `0x${string}`),
+						// gasPrice: viemArgs.gasPrice && `0x${viemArgs.gasPrice.toString(16)}` as `0x${string}`,
+						maxFeePerGas: viemArgs.maxFeePerGas && (`0x${viemArgs.maxFeePerGas.toString(16)}` as `0x${string}`),
+						maxPriorityFeePerGas:
+							viemArgs.maxPriorityFeePerGas && (`0x${viemArgs.maxPriorityFeePerGas.toString(16)}` as `0x${string}`),
+						// value: `0x${viemArgs.value?.toString(16)}` as `0x${string}`,
+						nonce: viemArgs.nonce && (`0x${viemArgs.nonce.toString(16)}` as `0x${string}`),
+					},
+				],
+			});
+
+			txHash = await env.network.provider.request({
+				method: 'eth_sendRawTransaction',
+				params: [rawTx],
+			});
+		}
 
 		const partialDeployment: PartialDeployment<TAbi> = {
 			...artifactToUse,

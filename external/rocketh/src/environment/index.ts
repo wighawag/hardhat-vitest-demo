@@ -5,10 +5,12 @@ import {
 	AccountType,
 	Deployment,
 	Environment,
+	NamedSigner,
 	PendingDeployment,
 	ResolvedAccount,
 	ResolvedConfig,
 	ResolvedNamedAccounts,
+	ResolvedNamedSigners,
 	UnknownArtifacts,
 	UnknownDeployments,
 	UnresolvedUnknownNamedAccounts,
@@ -19,7 +21,7 @@ import {InternalEnvironment} from '../internal/types';
 import path from 'node:path';
 import {JSONToString, stringToJSON} from '../utils/json';
 import {loadDeployments} from './deployments';
-import {EIP1193DATA, EIP1193SignerProvider, EIP1193TransactionEIP1193DATA} from 'eip-1193';
+import {EIP1193Account, EIP1193ProviderWithoutEvents} from 'eip-1193';
 import {ProvidedContext} from '../executor/types';
 
 export type EnvironmentExtenstion = (env: Environment) => Environment;
@@ -29,7 +31,7 @@ export function extendEnvironment(extension: EnvironmentExtenstion): void {
 	(globalThis as any).extensions.push(extension);
 }
 
-export type SignerProtocolFunction = (protocolString: string) => Promise<EIP1193SignerProvider>;
+export type SignerProtocolFunction = (protocolString: string) => Promise<NamedSigner>;
 export type SignerProtocol = {
 	getSigner: SignerProtocolFunction;
 };
@@ -50,7 +52,8 @@ export async function createEnvironment<
 	config: ResolvedConfig,
 	providedContext: ProvidedContext<Artifacts, NamedAccounts>
 ): Promise<{internal: InternalEnvironment; external: Environment}> {
-	const provider = 'provider' in config ? config.provider : new JSONRPCHTTPProvider(config.nodeUrl);
+	const provider =
+		'provider' in config ? config.provider : (new JSONRPCHTTPProvider(config.nodeUrl) as EIP1193ProviderWithoutEvents);
 
 	const transport = custom(provider);
 	const viemClient = createPublicClient({transport});
@@ -77,7 +80,7 @@ export async function createEnvironment<
 		}
 	}
 
-	const resolvedAccounts: ResolvedNamedAccounts<NamedAccounts> = {} as ResolvedNamedAccounts<NamedAccounts>;
+	const resolvedAccounts: {[name: string]: ResolvedAccount} = {};
 
 	const accountCache: {[name: string]: ResolvedAccount} = {};
 	async function getAccount(
@@ -94,6 +97,7 @@ export async function createEnvironment<
 			const accountPerIndex = accounts[accountDef];
 			if (accountPerIndex) {
 				accountCache[name] = account = {
+					type: 'remote',
 					address: accountPerIndex,
 					signer: provider,
 				};
@@ -103,15 +107,16 @@ export async function createEnvironment<
 				if (accountDef.length === 66) {
 					const privateKeyProtocol: SignerProtocol = (globalThis as any).signerProtocols['privateKey'];
 					if (privateKeyProtocol) {
-						const signer = await privateKeyProtocol.getSigner(`privateKey:${accountDef}`);
-						const [address] = await signer.request({method: 'eth_accounts'});
+						const namedSigner = await privateKeyProtocol.getSigner(`privateKey:${accountDef}`);
+						const [address] = await namedSigner.signer.request({method: 'eth_accounts'});
 						accountCache[name] = account = {
+							...namedSigner,
 							address,
-							signer,
 						};
 					}
 				} else {
 					accountCache[name] = account = {
+						type: 'remote',
 						address: accountDef as `0x${string}`,
 						signer: provider,
 					};
@@ -123,11 +128,11 @@ export async function createEnvironment<
 					if (!protocol) {
 						throw new Error(`protocol: ${protocol} is not supported`);
 					}
-					const signer = await protocol.getSigner(accountDef);
-					const [address] = await signer.request({method: 'eth_accounts'});
+					const namedSigner = await protocol.getSigner(accountDef);
+					const [address] = await namedSigner.signer.request({method: 'eth_accounts'});
 					accountCache[name] = account = {
+						...namedSigner,
 						address,
-						signer,
 					};
 				} else {
 					const accountFetched = await getAccount(name, accounts, accounts[accountDef]);
@@ -169,10 +174,24 @@ export async function createEnvironment<
 
 	const {deployments} = loadDeployments(config.deployments, context.network.name, false, chainId);
 
+	const namedAccounts: {[name: string]: EIP1193Account} = {};
+	const namedSigners: {[name: string]: NamedSigner} = {};
+	const addressSigners: {[name: `0x${string}`]: NamedSigner} = {};
+
+	for (const entry of Object.entries(resolvedAccounts)) {
+		const name = entry[0];
+		const {address, ...namedSigner} = entry[1];
+		namedAccounts[name] = address;
+		addressSigners[address] = namedSigner;
+		namedSigners[name] = namedSigner;
+	}
+
 	const perliminaryEnvironment = {
 		config,
 		deployments: deployments as Deployments,
-		accounts: context.accounts || {},
+		accounts: namedAccounts as ResolvedNamedAccounts<NamedAccounts>,
+		signers: namedSigners as ResolvedNamedSigners<ResolvedNamedAccounts<NamedAccounts>>,
+		addressSigners: addressSigners,
 		artifacts: context.artifacts,
 		network: {
 			chainId,
@@ -328,7 +347,7 @@ export async function createEnvironment<
 		return deployment;
 	}
 
-	let env: Environment = {
+	let env: Environment<Artifacts, NamedAccounts, Deployments> = {
 		...perliminaryEnvironment,
 		save,
 		saveWhilePending,

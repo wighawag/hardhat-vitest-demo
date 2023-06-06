@@ -6,7 +6,7 @@ export default execute(
 	context,
 	async ({deploy, accounts, artifacts}) => {
 		const contract = await deploy('Lock', {
-			account: accounts.deployer.address,
+			account: accounts.deployer,
 			artifact: artifacts.Lock,
 			args: [1900000000n],
 		});
