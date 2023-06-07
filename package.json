@@ -10,7 +10,7 @@
     "hardhat-rocketh": "^0.5.6",
     "ldenv": "^0.3.5",
     "rocketh": "^0.5.2",
-    "rocketh-deploy-proxy": "workspace:*",
+    "rocketh-deploy-proxy": "^0.5.3",
     "rocketh-signer": "^0.5.2",
     "rocketh-verifier": "^0.5.2",
     "set-defaults": "^0.0.1",
