@@ -14,7 +14,9 @@ export const publicClient = createPublicClient({
 	transport: custom(network.provider),
 });
 
-export const accounts = await walletClient.getAddresses();
+export function getAccounts() {
+	return walletClient.getAddresses();
+}
 
 export function contract<TAbi extends Abi>(contractInfo: {address: `0x${string}`; abi: TAbi}) {
 	return getContract({
