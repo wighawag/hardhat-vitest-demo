@@ -105,16 +105,27 @@ extendEnvironment((env: Environment) => {
 				throw new Error(`deployment for "${name}" exits but there is no proxy`);
 			}
 
-			const currentImplementationAddress = '' as `0x${string}`; // TODO fetch from storage
-			if (currentImplementationAddress.toLowerCase() === implementation.address.toLowerCase()) {
-				const data = methodCallData
-					? encodeFunctionData({
-							abi: proxyArtifact.abi,
-							functionName: 'upgradeToAndCall',
-							args: [implementation.address, methodCallData],
-					  })
-					: encodeFunctionData({abi: proxyArtifact.abi, functionName: 'upgradeTo', args: [implementation.address]});
-				// TODO execute data
+			const implementationSlotData = await env.network.provider.request({
+				method: 'eth_getStorageAt',
+				params: [proxyDeployment.address, '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc'],
+			});
+			const currentImplementationAddress = `0x${implementationSlotData.substr(-40)}`;
+
+			if (currentImplementationAddress.toLowerCase() !== implementation.address.toLowerCase()) {
+				if (methodCallData) {
+					await env.execute<typeof proxyArtifact.abi, 'upgradeToAndCall'>(proxyName, {
+						account: address,
+						functionName: 'upgradeToAndCall',
+						args: [implementation.address, methodCallData],
+						value: 0n, // TODO
+					});
+				} else {
+					await env.execute<typeof proxyArtifact.abi, 'upgradeTo'>(proxyName, {
+						account: address,
+						functionName: 'upgradeTo',
+						args: [implementation.address],
+					});
+				}
 			}
 			existingDeployment = await env.save(name, {
 				...proxyDeployment,

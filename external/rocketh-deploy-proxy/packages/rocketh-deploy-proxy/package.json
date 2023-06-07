@@ -22,7 +22,7 @@
 	},
 	"dependencies": {
 		"ethereum-deploy-proxy": "workspace:*",
-		"rocketh-deploy": "^0.5.2",
+		"rocketh-deploy": "^0.5.3",
 		"viem": "^0.3.50"
 	},
 	"scripts": {
