@@ -16,6 +16,7 @@
     "rocketh-signer": "^0.5.2",
     "rocketh-verifier": "^0.5.2",
     "set-defaults": "^0.0.1",
+    "solidity-coverage": "^0.8.2",
     "ts-node": "^10.9.1",
     "viem": "^0.3.50"
   },

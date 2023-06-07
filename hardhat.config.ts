@@ -1,6 +1,7 @@
 import {loadEnv} from 'ldenv';
 loadEnv();
 import '@nomicfoundation/hardhat-network-helpers';
+import 'solidity-coverage';
 import {addForkConfiguration, addNetworksFromEnv} from 'hardhat-rocketh';
 
 export default {
