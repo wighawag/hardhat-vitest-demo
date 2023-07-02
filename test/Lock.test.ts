@@ -1,11 +1,12 @@
 import {expect, describe, it} from 'vitest';
+
 import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 
 import {loadAndExecuteDeployments} from 'rocketh';
 
-import {getConnection, fetchContract} from './connection';
+import {getConnection, fetchContract} from './connection.js';
 
-import artifacts from '../generated/artifacts';
+import artifacts from '../generated/artifacts.js';
 
 const ONE_YEAR_IN_SECS = 365n * 24n * 60n * 60n;
 const ONE_GWEI = 1_000_000_000n;
@@ -28,7 +29,7 @@ async function deployLock(delta: bigint) {
 	const receipt = await publicClient.waitForTransactionReceipt({hash});
 
 	if (!receipt.contractAddress) {
-		throw new Error(`failed to deploy contract ${name}`);
+		throw new Error(`failed to deploy contract`);
 	}
 
 	return {

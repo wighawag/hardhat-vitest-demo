@@ -17,7 +17,8 @@
     "set-defaults": "^0.0.1",
     "solidity-coverage": "^0.8.3",
     "viem": "^1.2.7",
-    "vitest": "^0.31.4"
+    "vitest": "^0.32.2",
+    "vitest-solidity-coverage": "^0.0.3"
   },
   "scripts": {
     "prepare": "set-defaults .vscode && pnpm compile",

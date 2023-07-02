@@ -4,7 +4,7 @@ export default defineConfig({
 	test: {
 		coverage: {
 			provider: 'custom',
-			customProviderModule: 'utils/coverage/vitest-provider',
+			customProviderModule: 'vitest-solidity-coverage',
 		},
 	},
 });

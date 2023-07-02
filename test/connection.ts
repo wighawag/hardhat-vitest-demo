@@ -13,7 +13,7 @@ import hre from 'hardhat';
 import type {EIP1193ProviderWithoutEvents} from 'eip-1193';
 
 import {hardhat} from 'viem/chains';
-import {setupProviderWithCoverageSupport} from './coverage';
+import {setupProviderWithCoverageSupport} from 'vitest-solidity-coverage/provider';
 
 export type Connection = {
 	walletClient: WalletClient<CustomTransport, typeof hardhat>;
@@ -27,7 +27,7 @@ export async function getConnection(): Promise<Connection> {
 	if (cache.connection) {
 		return cache.connection;
 	}
-	const {provider} = await setupProviderWithCoverageSupport(hre); // hre.network.provider as EIP1193ProviderWithoutEvents;
+	const provider = await setupProviderWithCoverageSupport(hre); // hre.network.provider as EIP1193ProviderWithoutEvents;
 
 	const walletClient = createWalletClient({
 		chain: hardhat,
