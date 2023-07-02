@@ -4,9 +4,9 @@ import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 
 import {loadAndExecuteDeployments} from 'rocketh';
 
-import {getConnection, fetchContract} from './connection.js';
+import {getConnection, fetchContract} from './connection';
 
-import artifacts from '../generated/artifacts.js';
+import artifacts from '../generated/artifacts';
 
 const ONE_YEAR_IN_SECS = 365n * 24n * 60n * 60n;
 const ONE_GWEI = 1_000_000_000n;
