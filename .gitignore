@@ -8,5 +8,5 @@ deployments/localhost
 
 *.local
 
-coverage
-coverage.json
+/coverage
+/coverage.json
