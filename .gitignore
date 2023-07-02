@@ -10,6 +10,4 @@ deployments/localhost
 
 /coverage
 /coverage.json
-
 /coverage-data.json
-log.txt
