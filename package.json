@@ -18,12 +18,13 @@
     "solidity-coverage": "^0.8.3",
     "viem": "^1.2.7",
     "vitest": "^0.32.2",
-    "vitest-solidity-coverage": "^0.0.3"
+    "vitest-solidity-coverage": "^0.1.1"
   },
   "scripts": {
     "prepare": "set-defaults .vscode && pnpm compile",
     "compile": "hardhat compile",
     "test": "vitest",
+    "coverage": "hardhat compile-for-coverage && vitest run --coverage && hardhat compile",
     "local_node": "rm -Rf deployments/localhost && hardhat node",
     "start": "zellij --layout zellij.kdl a $npm_package_name || zellij --layout zellij.kdl -s $npm_package_name"
   }

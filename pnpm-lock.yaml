@@ -45,8 +45,8 @@ devDependencies:
     specifier: ^0.32.2
     version: 0.32.2
   vitest-solidity-coverage:
-    specifier: ^0.0.3
-    version: 0.0.3(hardhat@2.16.1)(solidity-coverage@0.8.3)(vitest@0.32.2)
+    specifier: ^0.1.1
+    version: 0.1.1(hardhat@2.16.1)(solidity-coverage@0.8.3)(vitest@0.32.2)
 
 packages:
 
@@ -4694,8 +4694,8 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest-solidity-coverage@0.0.3(hardhat@2.16.1)(solidity-coverage@0.8.3)(vitest@0.32.2):
-    resolution: {integrity: sha512-5wnQW3orCNaWnkSPTGHv4WFX6QtaoSYSiVmYNS1c2HkNVEpj5DjOtmZvXxfVlgL8ZEl5nNTKgq8f7GTbGJQ8aA==}
+  /vitest-solidity-coverage@0.1.1(hardhat@2.16.1)(solidity-coverage@0.8.3)(vitest@0.32.2):
+    resolution: {integrity: sha512-/kh9xlfthJxI4/hr/J3Hkpl+vcfsTcCwF8+37YUR2yUbFOrM5sg59QVrgSxuFTm+mcfRa0R7Olr+kTc4vTnaBQ==}
     peerDependencies:
       hardhat: ^2.16.1
       solidity-coverage: ^0.8.3
