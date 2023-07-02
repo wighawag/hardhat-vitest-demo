@@ -3,10 +3,9 @@ import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 
 import {loadAndExecuteDeployments} from 'rocketh';
 
-import {walletClient, contract, publicClient, getAccounts} from './viem';
+import {getConnection, fetchContract} from './viem';
 
 import artifacts from '../generated/artifacts';
-import {network} from 'hardhat';
 
 const ONE_YEAR_IN_SECS = 365n * 24n * 60n * 60n;
 const ONE_GWEI = 1_000_000_000n;
@@ -15,7 +14,9 @@ async function deployLock(delta: bigint) {
 	const lockedAmount = ONE_GWEI;
 	const unlockTime = BigInt(await time.latest()) + delta;
 
-	const [owner, ...otherAccounts] = await getAccounts();
+	const {accounts, walletClient, publicClient} = await getConnection();
+
+	const [owner, ...otherAccounts] = accounts;
 	const hash = await walletClient.deployContract({
 		abi: artifacts.Lock.abi,
 		bytecode: artifacts.Lock.bytecode,
@@ -31,11 +32,13 @@ async function deployLock(delta: bigint) {
 	}
 
 	return {
-		lock: contract({address: receipt.contractAddress, abi: artifacts.Lock.abi}),
+		lock: await fetchContract({address: receipt.contractAddress, abi: artifacts.Lock.abi}),
 		unlockTime,
 		lockedAmount,
 		owner,
 		otherAccounts,
+		walletClient,
+		publicClient,
 	};
 }
 
@@ -46,10 +49,11 @@ async function deployOneYearLockFixture() {
 describe('Lock', function () {
 	describe('Deployment', function () {
 		it('Should be already deployed', async function () {
+			const {provider} = await getConnection();
 			const {deployments} = await loadAndExecuteDeployments({
-				provider: network.provider as any,
+				provider,
 			});
-			const lock = contract(deployments['Lock']);
+			const lock = await fetchContract(deployments['Lock']);
 			const unlockTime = await lock.read.unlockTime();
 			expect(unlockTime).to.equal(0n); // TODO 1900000000n
 		});
@@ -65,7 +69,7 @@ describe('Lock', function () {
 		});
 
 		it('Should receive and store the funds to lock', async function () {
-			const {lock, lockedAmount} = await loadFixture(deployOneYearLockFixture);
+			const {lock, lockedAmount, publicClient} = await loadFixture(deployOneYearLockFixture);
 			expect(await publicClient.getBalance({address: lock.address})).to.equal(lockedAmount);
 		});
 

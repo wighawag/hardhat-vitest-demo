@@ -6,6 +6,7 @@
   "type": "module",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "eip-1193": "^0.4.7",
     "hardhat": "^2.16.1",
     "hardhat-rocketh": "^0.6.10",
     "ldenv": "^0.3.7",
