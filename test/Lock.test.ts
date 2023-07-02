@@ -3,7 +3,7 @@ import {loadFixture, time} from '@nomicfoundation/hardhat-network-helpers';
 
 import {loadAndExecuteDeployments} from 'rocketh';
 
-import {getConnection, fetchContract} from './viem';
+import {getConnection, fetchContract} from './connection';
 
 import artifacts from '../generated/artifacts';
 
