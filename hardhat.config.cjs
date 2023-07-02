@@ -2,6 +2,7 @@ const {loadEnv} = require('ldenv');
 loadEnv();
 require('@nomicfoundation/hardhat-network-helpers');
 const {addForkConfiguration, addNetworksFromEnv} = require('hardhat-rocketh');
+require('./utils/coverage/compilation');
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
