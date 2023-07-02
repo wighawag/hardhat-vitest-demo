@@ -123,120 +123,120 @@
     "id": 5,
     "type": "statement",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x336652602c34996a": {
     "id": 32,
     "type": "line",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x85444893248a4602": {
     "id": 4,
     "type": "statement",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x679812210c4ea7a5": {
     "id": 30,
     "type": "line",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x28e3c6077e99e1d8": {
     "id": 3,
     "type": "requirePost",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0xdecd141fc0b9f405": {
     "id": 3,
     "type": "statement",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x855e621f4d5c1c60": {
     "id": 3,
     "type": "requirePre",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0xd95e3064f4f08eb8": {
     "id": 28,
     "type": "line",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x8407895c377eed55": {
     "id": 2,
     "type": "requirePost",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x1f57a08c37495754": {
     "id": 2,
     "type": "statement",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x7372a0d877b520f5": {
     "id": 2,
     "type": "requirePre",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0xf7fdde56ce8ae02c": {
     "id": 27,
     "type": "line",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0xf2a8950c82b00bc9": {
     "id": 2,
     "type": "function",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 3
   },
   "0x481e93f91961b569": {
     "id": 20,
     "type": "line",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 2
   },
   "0x5d4cc27102d523e1": {
     "id": 19,
     "type": "line",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 2
   },
   "0xe7c0518d2d677227": {
     "id": 1,
     "type": "requirePost",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 2
   },
   "0x4bb60978ab38e735": {
     "id": 1,
     "type": "statement",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 2
   },
   "0x1371689dd0664dfd": {
     "id": 1,
     "type": "requirePre",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 2
   },
   "0xe231aaa7937af913": {
     "id": 14,
     "type": "line",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 2
   },
   "0x4edf791fd930971c": {
     "id": 1,
     "type": "function",
     "contractPath": "/home/wighawag/dev/github.com/wighawag/template-rocketh/contracts/Lock.sol",
-    "hits": 0
+    "hits": 2
   }
 }
