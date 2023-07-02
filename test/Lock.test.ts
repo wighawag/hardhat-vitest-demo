@@ -46,7 +46,7 @@ async function deployOneYearLockFixture() {
 describe('Lock', function () {
 	describe('Deployment', function () {
 		it('Should be already deployed', async function () {
-			const deployments = await loadAndExecuteDeployments({
+			const {deployments} = await loadAndExecuteDeployments({
 				provider: network.provider as any,
 			});
 			const lock = contract(deployments['Lock']);

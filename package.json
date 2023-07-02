@@ -8,22 +8,22 @@
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
-    "hardhat": "^2.14.1",
-    "hardhat-rocketh": "^0.5.6",
-    "ldenv": "^0.3.5",
-    "rocketh": "^0.5.2",
-    "rocketh-deploy-proxy": "^0.5.3",
-    "rocketh-signer": "^0.5.2",
-    "rocketh-verifier": "^0.5.2",
+    "hardhat": "^2.16.1",
+    "hardhat-rocketh": "^0.6.10",
+    "ldenv": "^0.3.7",
+    "rocketh": "^0.6.4",
+    "rocketh-deploy-proxy": "^0.6.9",
+    "rocketh-signer": "^0.6.4",
+    "rocketh-verifier": "^0.6.4",
     "set-defaults": "^0.0.1",
-    "solidity-coverage": "^0.8.2",
+    "solidity-coverage": "^0.8.3",
     "ts-node": "^10.9.1",
-    "viem": "^0.3.50"
+    "viem": "^1.2.7"
   },
   "scripts": {
     "prepare": "set-defaults .vscode && pnpm compile",
     "compile": "hardhat compile",
-    "test": "vitest",
+    "test": "hardhat test",
     "local_node": "rm -Rf deployments/localhost && hardhat node",
     "start": "zellij --layout zellij.kdl a $npm_package_name || zellij --layout zellij.kdl -s $npm_package_name"
   }
