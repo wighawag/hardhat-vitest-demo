@@ -7,3 +7,6 @@ generated
 deployments/localhost
 
 *.local
+
+coverage
+coverage.json
