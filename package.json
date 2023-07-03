@@ -24,10 +24,10 @@
   "scripts": {
     "prepare": "set-defaults .vscode && pnpm compile",
     "compile": "hardhat compile",
-    "watch_compile": "as-soon -w contracts pnpm compile",
+    "compile:watch": "as-soon -w contracts pnpm compile",
     "test": "vitest",
     "coverage": "hardhat compile-for-coverage && vitest run --coverage && hardhat compile",
-    "watch_coverage:compile": "as-soon -w contracts hardhat compile-for-coverage",
+    "coverage:compile:watch": "as-soon -w contracts hardhat compile-for-coverage",
     "coverage:watch": "hardhat compile-for-coverage && vitest --coverage",
     "local_node": "rm -Rf deployments/localhost && hardhat node",
     "start": "zellij --layout zellij.kdl a $npm_package_name || zellij --layout zellij.kdl -s $npm_package_name"
