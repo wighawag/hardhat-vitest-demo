@@ -7,8 +7,8 @@ layout {
 			pane name="live test" command="pnpm" {
 				args "test"
 			}
-			pane name="local node" command="pnpm"  {
-				args "local_node"
+			pane name="compile" command="pnpm"  {
+				args "compile:watch"
 			}
 		}
 	}
