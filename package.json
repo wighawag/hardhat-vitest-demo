@@ -6,6 +6,7 @@
   "type": "module",
   "devDependencies": {
     "@nomicfoundation/hardhat-network-helpers": "^1.0.8",
+    "as-soon": "^0.0.4",
     "eip-1193": "^0.4.7",
     "hardhat": "^2.16.1",
     "hardhat-rocketh": "^0.6.10",
@@ -18,13 +19,16 @@
     "solidity-coverage": "^0.8.3",
     "viem": "^1.2.7",
     "vitest": "^0.32.2",
-    "vitest-solidity-coverage": "^0.1.2"
+    "vitest-solidity-coverage": "^0.1.3"
   },
   "scripts": {
     "prepare": "set-defaults .vscode && pnpm compile",
     "compile": "hardhat compile",
+    "watch_compile": "as-soon -w contracts pnpm compile",
     "test": "vitest",
     "coverage": "hardhat compile-for-coverage && vitest run --coverage && hardhat compile",
+    "watch_coverage:compile": "as-soon -w contracts hardhat compile-for-coverage",
+    "coverage:watch": "hardhat compile-for-coverage && vitest --coverage",
     "local_node": "rm -Rf deployments/localhost && hardhat node",
     "start": "zellij --layout zellij.kdl a $npm_package_name || zellij --layout zellij.kdl -s $npm_package_name"
   }
